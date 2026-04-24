@@ -357,7 +357,24 @@
     </div>
 
     <script>
-        const ws = new WebSocket(`ws://${window.location.host}`);
+        let ws;
+        try {
+            // 只有在本地環境 (http) 才會嘗試建立 WebSocket 連線
+            if (window.location.protocol === 'http:') {
+                ws = new WebSocket(`ws://${window.location.host}`);
+                ws.onmessage = (event) => {
+                    const res = JSON.parse(event.data);
+                    if (res.type === 'UPDATE') {
+                        allData = res.data;
+                        updateStatusInfo();
+                        render();
+                    }
+                };
+            }
+        } catch (e) {
+            console.error('WebSocket 連線失敗，改用靜態資料模式');
+        }
+
         let expandedId = null;
         let allData = [];
         let searchQuery = '';
