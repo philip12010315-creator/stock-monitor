@@ -437,13 +437,14 @@
 
         if (ws) {
             ws.onmessage = (event) => {
-            const res = JSON.parse(event.data);
-            if (res.type === 'UPDATE') {
-                allData = res.data;
-                updateStatusInfo();
-                render();
-            }
-        };
+                const res = JSON.parse(event.data);
+                if (res.type === 'UPDATE') {
+                    allData = res.data;
+                    updateStatusInfo();
+                    render();
+                }
+            };
+        }
 
         function updateStatusInfo() {
             const now = new Date();
