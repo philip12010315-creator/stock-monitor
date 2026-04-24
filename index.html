@@ -428,7 +428,15 @@
             }
         });
 
-        ws.onmessage = (event) => {
+        // 恢復搜尋功能監聽
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            updateStatusInfo();
+            render();
+        });
+
+        if (ws) {
+            ws.onmessage = (event) => {
             const res = JSON.parse(event.data);
             if (res.type === 'UPDATE') {
                 allData = res.data;
