@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外資買超排行榜 - Profit Path Pro</title>
+    <style>
+        :root {
+            /* 預設深色模式 (Dark) */
+            --bg: #030712;
+            --row-bg: rgba(17, 24, 39, 0.6);
+            --accent: #38bdf8;
+            --gold: #fbbf24;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --extreme: #ec4899;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            --text-title: #ffffff;
+            --header-bg: rgba(3, 7, 18, 0.8);
+            --card-inner: rgba(255, 255, 255, 0.05);
+            --node-bg: #1e293b;
+            --node-border: #334155;
+        }
+
+        [data-theme="light"] {
+            --bg: #f3f4f6;
+            --row-bg: rgba(255, 255, 255, 0.8);
+            --accent: #0284c7;
+            --gold: #b45309;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --extreme: #db2777;
+            --border: rgba(0, 0, 0, 0.1);
+            --text-main: #374151;
+            --text-dim: #6b7280;
+            --text-title: #111827;
+            --header-bg: rgba(243, 244, 246, 0.8);
+            --card-inner: rgba(0, 0, 0, 0.03);
+            --node-bg: #e5e7eb;
+            --node-border: #d1d5db;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 40px 10px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 30px; padding: 0 20px;
+        }
+
+        h1 { margin: 0; font-size: 2rem; font-weight: 800; color: var(--text-title); }
+        .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+
+        .thead-row, .row-main {
+            display: grid;
+            grid-template-columns: 40px 60px 1.5fr 1fr 1.2fr 1fr 1fr 2fr;
+            align-items: center;
+        }
+
+        .thead-row {
+            padding: 0 25px; color: var(--text-dim); font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        }
+
+        .row-item {
+            margin-bottom: 8px;
+            background: var(--row-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .row-main {
+            padding: 15px 25px;
+            cursor: pointer;
+        }
+
+        .row-item:hover { border-color: var(--accent); background: rgba(31, 41, 55, 0.8); }
+
+        .rank { font-size: 1.2rem; font-weight: 900; color: var(--text-dim); }
+        .row-item:nth-child(-n+3) .rank { color: var(--gold); }
+
+        .stock-main h3 { margin: 0; font-size: 1.1rem; color: var(--text-title); }
+        .stock-main span { font-size: 0.75rem; color: var(--text-dim); background: var(--card-inner); padding: 1px 6px; border-radius: 4px; }
+
+        .price-val { font-size: 1.2rem; font-weight: 700; color: var(--text-title); }
+        .buy-val { font-size: 1.1rem; font-weight: 600; color: var(--success); }
+        
+        .gauge-mini {
+            height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px;
+            position: relative; margin-right: 20px; flex-grow: 1;
+        }
+        .zone-highlight { position: absolute; height: 100%; left: 26.6%; width: 40%; background: var(--gold); opacity: 0.3; }
+        .pointer {
+            position: absolute; width: 10px; height: 10px; background: #fff;
+            border-radius: 50%; top: -3px; box-shadow: 0 0 10px #fff;
+        }
+
+        /* 獲利路徑推演面板 */
+        .detail-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .row-item.expanded .detail-panel {
+            max-height: 400px;
+            padding: 30px;
+        }
+
+        .path-title {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
+        }
+        .path-title h4 { margin: 0; font-size: 1.2rem; color: var(--text-title); font-weight: 600; }
+
+        /* 路徑圖表核心 */
+        .path-chart {
+            position: relative;
+            height: 100px;
+            margin: 60px 20px 20px 20px;
+        }
+
+        .path-line {
+            height: 4px; background: #334155; border-radius: 2px; position: relative;
+        }
+
+        .path-progress {
+            position: absolute; height: 100%; left: 0; background: var(--success);
+            box-shadow: 0 0 15px var(--success); border-radius: 2px;
+        }
+
+        .path-node {
+            position: absolute; top: -8px; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+
+        .node-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--node-bg); border: 3px solid var(--node-border); }
+        .node-dot.passed { background: var(--success); border-color: var(--success); box-shadow: 0 0 10px var(--success); }
+        .node-dot.active { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 15px var(--danger); }
+
+        .node-label { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+        .node-price { font-size: 0.75rem; color: var(--text-dim); margin-top: -5px; }
+
+        .path-indicator {
+            position: absolute; top: -45px; transform: translateX(-50%);
+            background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 8px;
+            font-weight: bold; font-size: 0.9rem; z-index: 10;
+        }
+        .path-indicator::after {
+            content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid var(--accent);
+        }
+
+        /* 搜尋框樣式 */
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 300px;
+            margin-left: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .search-icon { display: none; }
+
+        /* 佈局樣式 */
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .left-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .right-col {
+            width: 320px;
+            position: sticky;
+            top: 20px;
+            flex-shrink: 0;
+        }
+
+        /* 收藏專區樣式 (側邊欄版) */
+        .favorites-zone {
+            background: rgba(17, 24, 39, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .fav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .fav-header h2 { margin: 0; font-size: 1rem; color: var(--accent); font-weight: 700; letter-spacing: 1px; }
+        .fav-header .count { background: var(--accent); color: var(--bg); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; }
+
+        .fav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        /* 捲軸樣式 */
+        .fav-list::-webkit-scrollbar { width: 4px; }
+        .fav-list::-webkit-scrollbar-track { background: transparent; }
+        .fav-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .fav-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .fav-card:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.08); }
+
+        .fav-card .info { display: flex; flex-direction: column; gap: 2px; }
+        .fav-card .name { font-weight: bold; color: var(--text-title); font-size: 0.9rem; }
+        .fav-card .code { font-size: 0.7rem; color: var(--text-dim); background: var(--card-inner); padding: 1px 6px; border-radius: 4px; width: fit-content; }
+
+        .fav-remove { color: var(--text-dim); cursor: pointer; padding: 5px; transition: color 0.2s; }
+        .fav-remove:hover { color: var(--danger); }
+
+        .fav-empty { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 0.85rem; font-style: italic; line-height: 1.6; }
+
+        @media (max-width: 1100px) {
+            .main-layout { flex-direction: column; }
+            .right-col { width: 100%; position: static; order: -1; }
+            .fav-list { flex-direction: row; flex-wrap: wrap; max-height: none; }
+            .fav-card { min-width: 180px; flex: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 主題切換按鈕組 */
+        .theme-toggle-group {
+            display: flex;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        .theme-btn:hover { opacity: 1; background: rgba(255,255,255,0.05); }
+        
+        .theme-btn.active {
+            background: var(--accent);
+            opacity: 1;
+            filter: grayscale(0);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        [data-theme="light"] .theme-btn.active {
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>外資買超排行榜</h1>
+                <div class="subtitle" id="update-info">同步中...</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="搜尋名稱或代碼..." autocomplete="off">
+                </div>
+                <div class="theme-toggle-group">
+                    <button class="theme-btn" data-theme-val="dark" title="深色模式">🌙</button>
+                    <button class="theme-btn" data-theme-val="light" title="淺色模式">☀️</button>
+                    <button class="theme-btn" data-theme-val="auto" title="自動偵測">🌗</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <div class="left-col">
+                <div class="thead-row">
+                    <div></div><div>排名</div><div>個股</div><div>現價</div><div>今日買超</div><div>外資成本</div><div>溢價率</div><div>發動趨勢</div>
+                </div>
+                <div id="leaderboard"></div>
+            </div>
+            <div class="right-col">
+                <div id="favorites-section" class="favorites-zone"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket(`ws://${window.location.host}`);
+        let expandedId = null;
+        let allData = [];
+        let searchQuery = '';
+        let favorites = JSON.parse(localStorage.getItem('stock_favorites') || '[]');
+
+        // 主題控制邏輯
+        const savedTheme = localStorage.getItem('app-theme') || 'dark';
+
+        function applyTheme(theme) {
+            // 更新 UI 狀態
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.themeVal === theme);
+            });
+
+            if (theme === 'auto') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem('app-theme', theme);
+        }
+
+        // 初始化
+        applyTheme(savedTheme);
+
+        // 新增：從靜態檔案讀取資料（為了 GitHub Pages 分享給朋友）
+        async function loadStaticData() {
+            try {
+                const response = await fetch('data.json');
+                if (response.ok) {
+                    const res = await response.json();
+                    allData = res;
+                    updateStatusInfo();
+                    render();
+                }
+            } catch (e) {
+                console.log('尚未產生靜態資料檔案，等待即時連線...');
+            }
+        }
+        loadStaticData();
+
+        // 綁定點擊事件
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => applyTheme(btn.dataset.themeVal));
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('app-theme') === 'auto') {
+                applyTheme('auto');
+            }
+        });
+
+        ws.onmessage = (event) => {
+            const res = JSON.parse(event.data);
+            if (res.type === 'UPDATE') {
+                allData = res.data;
+                updateStatusInfo();
+                render();
+            }
+        };
+
+        function updateStatusInfo() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                           now.getMinutes().toString().padStart(2, '0') + ':' + 
+                           now.getSeconds().toString().padStart(2, '0');
+            
+            let infoHtml = `最後更新：${timeStr}`;
+            
+            if (allData.length > 0) {
+                if (searchQuery) {
+                    const filteredCount = allData.filter(item => {
+                        const name = (item['商品'] || '').toLowerCase();
+                        const code = (item['代碼'] || '').replace('.TW','').replace('.TWO','').toLowerCase();
+                        return name.includes(searchQuery) || code.includes(searchQuery);
+                    }).length;
+                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">符合條件：<b style="color:var(--accent)">${filteredCount}</b> / ${allData.length} 檔</span>`;
+                } else {
+                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">監控總數：<b style="color:var(--accent)">${allData.length}</b> 檔</span>`;
+                }
+            }
+            
+            document.getElementById('update-info').innerHTML = infoHtml;
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            updateStatusInfo();
+            render();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+        });
+
+        function togglePin(e, name, code) {
+            e.stopPropagation();
+            const index = favorites.findIndex(f => f.code === code);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push({ name, code });
+            }
+            localStorage.setItem('stock_favorites', JSON.stringify(favorites));
+            render();
+        }
+
+        function render() {
+            const board = document.getElementById('leaderboard');
+            const favSection = document.getElementById('favorites-section');
+            
+            // 渲染收藏專區
+            if (favorites.length === 0) {
+                favSection.innerHTML = '<div class="fav-empty">尚未收藏任何股票，點擊下方排行榜的星號即可加入。</div>';
+            } else {
+                favSection.innerHTML = `
+                    <div class="fav-header">
+                        <h2>⭐ 收藏專區</h2>
+                        <span class="count">${favorites.length}</span>
+                    </div>
+                    <div class="fav-list">
+                        ${favorites.map(f => `
+                            <div class="fav-card">
+                                <div class="info">
+                                    <span class="name">${f.name}</span>
+                                    <span class="code">${f.code}</span>
+                                </div>
+                                <div class="fav-remove" onclick="togglePin(event, '${f.name}', '${f.code}')">✕</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            if (!allData || allData.length === 0) return;
+
+            // 過濾資料
+            let filtered = allData;
+            if (searchQuery) {
+                filtered = allData.filter(item => {
+                    const name = (item['商品'] || '').toLowerCase();
+                    const code = (item['代碼'] || '').replace('.TW','').replace('.TWO','').toLowerCase();
+                    return name.includes(searchQuery) || code.includes(searchQuery);
+                });
+            }
+            
+            const sorted = filtered.sort((a, b) => (parseInt(b['今日外資買超']) || 0) - (parseInt(a['今日外資買超']) || 0));
+            
+            board.innerHTML = '';
+
+            sorted.forEach((item, index) => {
+                const id = item['代碼'];
+                const price = parseFloat(item['目前股價'] || item['成交']);
+                const cost = parseFloat(item['外資成本']);
+                const ratio = price / cost;
+                
+                const nodes = [
+                    { label: '成本', mul: 1.00 },
+                    { label: '發動區', mul: 1.04 },
+                    { label: '第一關', mul: 1.20 },
+                    { label: '第二關', mul: 1.40 },
+                    { label: '最後目標', mul: 1.70 }
+                ];
+
+                // 計算現價在 1.0 到 1.7 之間的百分比
+                const chartMin = 1.00, chartMax = 1.70;
+                let currentPos = ((ratio - chartMin) / (chartMax - chartMin)) * 100;
+                currentPos = Math.max(0, Math.min(100, currentPos));
+
+                const itemWrap = document.createElement('div');
+                itemWrap.className = `row-item ${expandedId === id ? 'expanded' : ''}`;
+                const isPinned = favorites.some(f => f.code === (id || '').replace('.TW','').replace('.TWO',''));
+                
+                itemWrap.innerHTML = `
+                    <div class="row-main" onclick="toggle('${id}')">
+                        <div class="pin-btn ${isPinned ? 'active' : ''}" onclick="togglePin(event, '${item['商品']}', '${(id || '').replace('.TW','').replace('.TWO','')}')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="${isPinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                        </div>
+                        <div class="rank">#${index + 1}</div>
+                        <div class="stock-main">
+                            <h3>${item['商品']}</h3>
+                            <span>${(id || '').replace('.TW','').replace('.TWO','')}</span>
+                        </div>
+                        <div class="price-val">$${price}</div>
+                        <div class="buy-val">${(parseInt(item['今日外資買超'])||0).toLocaleString()}</div>
+                        <div class="cost-val">$${cost.toFixed(1)}</div>
+                        <div class="premium-val ${ratio >= 1.04 && ratio <= 1.10 ? 'in-zone' : ''}">${((ratio-1)*100).toFixed(2)}%</div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="gauge-mini"><div class="zone-highlight"></div><div class="pointer" style="left: ${Math.min(100, (ratio-1)/0.15*100)}%"></div></div>
+                        </div>
+                    </div>
+                    <div class="detail-panel">
+                        <div class="path-title">
+                            <h4>獲利路徑推演圖表</h4>
+                            <div style="font-size: 0.9rem; color: var(--text-dim);">現價：<b style="color:var(--text-title)">$${price}</b></div>
+                        </div>
+                        <div class="path-chart">
+                            <div class="path-indicator" style="left: ${currentPos}%">$${price}</div>
+                            <div class="path-line">
+                                <div class="path-progress" style="width: ${currentPos}%"></div>
+                                ${nodes.map(n => {
+                                    const pos = ((n.mul - chartMin) / (chartMax - chartMin)) * 100;
+                                    const p = (cost * n.mul).toFixed(1);
+                                    const isPassed = ratio >= n.mul;
+                                    return `
+                                        <div class="path-node" style="left: ${pos}%">
+                                            <div class="node-dot ${isPassed ? 'passed' : ''}"></div>
+                                            <div class="node-label" style="color: ${isPassed ? '#fff' : 'var(--text-dim)'}">${n.label}</div>
+                                            <div class="node-price">$${p}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                board.appendChild(itemWrap);
+            });
+        }
+
+        function toggle(id) {
+            expandedId = expandedId === id ? null : id;
+            document.querySelectorAll('.row-item').forEach(el => {
+                if (el.querySelector('.stock-main span').innerText === id.replace('.TW','').replace('.TWO','')) {
+                    el.classList.toggle('expanded');
+                } else {
+                    el.classList.remove('expanded');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

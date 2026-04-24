@@ -1,0 +1,16 @@
+{
+  "name": "xq-foreign-cost-dashboard",
+  "version": "1.0.0",
+  "description": "Automated Dashboard for XQ Foreign Cost Monitoring",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.13.0",
+    "csv-parser": "^3.0.0",
+    "chokidar": "^3.5.3",
+    "iconv-lite": "^0.6.3"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
