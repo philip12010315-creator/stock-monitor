@@ -96,12 +96,15 @@
             cursor: pointer;
         }
 
+        /* 桌機版：讓 wrapper div 透明，不影響 grid 佈局 */
+        .row-main-top, .row-main-bottom { display: contents; }
+
         .row-item:hover { border-color: var(--accent); background: rgba(31, 41, 55, 0.8); }
 
         .rank { font-size: 1.2rem; font-weight: 900; color: var(--text-dim); }
         .row-item:nth-child(-n+3) .rank { color: var(--gold); }
 
-        .stock-main h3 { margin: 0; font-size: 1.1rem; color: var(--text-title); }
+        .stock-main h3 { margin: 0; font-size: 1.1rem; color: var(--text-title); white-space: nowrap; }
         .stock-main span { font-size: 0.75rem; color: var(--text-dim); background: var(--card-inner); padding: 1px 6px; border-radius: 4px; }
 
         .price-val { font-size: 1.2rem; font-weight: 700; color: var(--text-title); }
@@ -137,112 +140,108 @@
         }
         .path-title h4 { margin: 0; font-size: 1.2rem; color: var(--text-title); font-weight: 600; }
 
-        /* 獲利路徑推演圖表 - 全新視覺優化 (Futuristic Timeline) */
+        /* ===== 獲利路徑推演圖表 - 質感版 ===== */
         .path-chart {
             position: relative;
-            height: 180px;
-            margin: 100px 25px 60px 25px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 24px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            margin: 15px 0;
+            padding: 70px 10px 20px 10px;
         }
 
-        .path-line {
-            height: 8px; width: 100%; background: rgba(0,0,0,0.2); border-radius: 4px; position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); top: 50%; transform: translateY(-50%);
+        /* 現價浮動指標 */
+        .path-indicator {
+            position: absolute; top: 5px; left: var(--current-pos, 0%); transform: translateX(-50%);
+            background: var(--accent); color: #fff; padding: 5px 14px; border-radius: 10px;
+            font-weight: 900; font-size: 0.95rem; z-index: 20;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            white-space: nowrap;
+        }
+        .path-indicator::after {
+            content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid var(--accent);
         }
 
-        .path-progress {
-            position: absolute; height: 100%; left: 0; 
+        /* 進度條軌道 */
+        .path-bar-track {
+            position: relative; height: 10px; 
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            border-radius: 5px; margin-bottom: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .path-bar-fill {
+            position: absolute; height: 100%; left: 0; border-radius: 5px;
             width: var(--current-pos, 0%);
-            background: linear-gradient(90deg, var(--accent) 0%, var(--success) 100%);
-            box-shadow: 0 0 20px var(--success); border-radius: 4px;
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(90deg, #22c55e 0%, #38bdf8 50%, #22c55e 100%);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+            transition: width 0.8s ease;
         }
 
-        .path-node {
-            position: absolute; top: 50%; left: var(--node-pos, 0%); transform: translate(-50%, -50%);
+        /* 節點容器 - 等距排列 */
+        .path-nodes {
+            display: flex; justify-content: space-between; position: relative;
+            margin-top: -5px; /* 讓 dot 蓋在 bar 上 */
+        }
+        .path-node-col {
             display: flex; flex-direction: column; align-items: center;
-            z-index: 10;
-        }
-
-
-        .node-dot { 
-            width: 24px; height: 24px; border-radius: 50%; 
-            background: var(--bg); border: 4px solid #334155; 
-            transition: all 0.4s;
+            flex: 1; /* 平分寬度 */
+            overflow: hidden; /* 防止文字溢出重疊 */
             position: relative;
+            min-width: 0; /* flex item 防止撑開 */
         }
-        
-        .node-dot.passed { 
-            background: var(--success); border-color: var(--success); 
-            box-shadow: 0 0 15px var(--success); 
-        }
-        
-        .node-dot.active { 
-            background: var(--danger); border-color: var(--danger); 
-            box-shadow: 0 0 20px var(--danger);
-            animation: pulse-node 2s infinite;
-        }
+        .path-node-col:first-child { align-items: flex-start; }
+        .path-node-col:last-child { align-items: flex-end; }
 
-        @keyframes pulse-node {
+        /* 節點圓點 */
+        .node-dot {
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 3px solid #475569; background: var(--bg);
+            z-index: 5; flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .node-dot.passed {
+            background: #22c55e; border-color: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+        }
+        .node-dot.active {
+            background: #ef4444; border-color: #ef4444;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-dot 2s infinite;
+        }
+        .node-dot.target-icon {
+            background: transparent; border: none;
+            width: 24px; height: 24px;
+        }
+        @keyframes pulse-dot {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* 標籤容器 - 強化對比與美感 */
-        .node-info {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            white-space: nowrap;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 12px;
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s;
+        /* 價格（上方） */
+        .node-price-top {
+            font-size: 0.8rem; color: var(--text-dim); font-weight: 600;
+            margin-bottom: 6px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
 
-        /* 交錯排版 */
-        .path-node.is-down .node-info { top: 35px; }
-        .path-node.is-up .node-info { bottom: 35px; }
-
-        .node-label { font-size: 0.95rem; font-weight: 800; color: var(--text-title); margin-bottom: 2px; }
-        .node-price { font-size: 0.8rem; color: var(--text-dim); font-weight: 700; }
-
-        .path-indicator {
-            position: absolute; top: -75px; left: var(--current-pos, 0%); transform: translateX(-50%);
-            background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 12px;
-            font-weight: 900; font-size: 1rem; z-index: 20;
-            box-shadow: 0 5px 20px rgba(56, 189, 248, 0.4);
-            animation: bounce-indicator 2s infinite ease-in-out;
-        }
-        
-        .path-indicator::after {
-            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-            border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid var(--accent);
+        /* 名稱（下方） */
+        .node-name {
+            font-size: 0.85rem; font-weight: 800; color: var(--text-title);
+            margin-top: 8px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
 
-        @keyframes bounce-indicator {
-            0%, 100% { transform: translate(-50%, 0); }
-            50% { transform: translate(-50%, -8px); }
+        /* 區域標籤（最底部） */
+        .zone-badge {
+            margin-top: 6px; font-size: 0.7rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 6px; white-space: nowrap;
+            display: flex; align-items: center; gap: 3px;
         }
+        .zone-badge.safe { color: #22c55e; border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); }
+        .zone-badge.build { color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+        .zone-badge.warn { color: #f97316; border: 1px solid rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
+        .zone-badge.danger { color: #ef4444; border: 1px solid rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
+        .zone-badge.extreme { color: #dc2626; border: 1px solid rgba(220,38,38,0.5); background: rgba(220,38,38,0.12); }
 
-        @keyframes ripple-active {
-            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-        }
-
-        .path-progress::after {
-            content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
-            width: 10px; height: 10px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 15px #fff; animation: ripple-active 1.5s infinite;
-        }
 
         /* 搜尋框樣式 */
         .search-container {
@@ -493,89 +492,14 @@
 
             .path-title h4 { font-size: 1rem !important; margin: 0; }
 
-            /* 垂直時間軸容器 */
-            .path-chart {
-                position: relative !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 10px 0 20px 0 !important;
-                background: transparent !important;
-                border: none !important;
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 0 !important;
-            }
-
-            /* 垂直軌道線（絕對定位在左側） */
-            .path-line {
-                position: absolute !important;
-                left: 11px !important;
-                top: 10px !important;
-                bottom: 20px !important;
-                width: 6px !important;
-                height: auto !important;
-                transform: none !important;
-                background: rgba(100, 116, 139, 0.3) !important;
-                border-radius: 3px !important;
-            }
-
-            /* 進度段 */
-            .path-progress {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: var(--current-pos, 0%) !important;
-                background: linear-gradient(180deg, var(--accent), var(--success)) !important;
-            }
-
-            .path-progress::after { display: none !important; }
-
-            /* 每個節點 */
-            .path-node {
-                position: static !important;
-                top: auto !important;
-                left: auto !important;
-                transform: none !important;
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 15px !important;
-                padding: 14px 0 14px 0 !important;
-                width: 100% !important;
-                border-bottom: 1px solid rgba(255,255,255,0.04);
-            }
-
-            .node-dot {
-                flex-shrink: 0 !important;
-                width: 22px !important;
-                height: 22px !important;
-                border-width: 3px !important;
-                margin-left: 0 !important;
-                z-index: 2 !important;
-                position: relative !important;
-            }
-
-            .node-info {
-                position: static !important;
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                flex: 1 !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                backdrop-filter: none !important;
-            }
-
-            .node-label { font-size: 1rem !important; font-weight: 700 !important; }
-            .node-price { font-size: 1rem !important; font-weight: 800 !important; opacity: 1 !important; }
-
-            /* 現價指標在垂直模式下隱藏（已在title欄顯示） */
-            .path-indicator { display: none !important; }
-
+            /* 手機版圖表優化 */
+            .path-chart { padding: 15px 5px 10px 5px !important; margin: 10px 0 !important; }
+            .path-indicator { display: none !important; } /* 手機版隱藏浮動指標，title已有價格 */
+            .path-bar-track { height: 8px !important; }
+            .node-price-top { font-size: 0.65rem !important; }
+            .node-name { font-size: 0.75rem !important; margin-top: 6px !important; }
+            .zone-badge { font-size: 0.6rem !important; padding: 2px 6px !important; }
+            .node-dot { width: 16px !important; height: 16px !important; border-width: 2px !important; }
 
             .favorites-zone { margin-bottom: 30px !important; border-radius: 20px !important; }
             .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
@@ -845,15 +769,27 @@
                 const ratio = price / cost;
                 
                 const nodes = [
-                    { label: '成本', mul: 1.00 },
-                    { label: '發動區', mul: 1.04 },
-                    { label: '第一關', mul: 1.20 },
-                    { label: '第二關', mul: 1.40 },
-                    { label: '最後目標', mul: 1.70 }
+                    { label: '成本',   mul: 1.00, zone: 'safe',    zoneName: '安全區', icon: '◇' },
+                    { label: '發動區', mul: 1.04, zone: 'build',   zoneName: '建倉區', icon: '↗' },
+                    { label: '第一關', mul: 1.20, zone: 'warn',    zoneName: '警戒區', icon: '⚠' },
+                    { label: '第二關', mul: 1.40, zone: 'danger',  zoneName: '高危區', icon: '🔥' },
+                    { label: '最後目標', mul: 1.70, zone: 'extreme', zoneName: '極限區', icon: '🎯' }
                 ];
 
+                // 等距排列：找到現價落在哪兩個節點之間，再線性插值
                 const chartMin = 1.00, chartMax = 1.70;
-                let currentPos = ((ratio - chartMin) / (chartMax - chartMin)) * 100;
+                let currentPos = 0;
+                for (let ni = 0; ni < nodes.length - 1; ni++) {
+                    if (ratio >= nodes[ni].mul && ratio < nodes[ni+1].mul) {
+                        const segStart = (ni / (nodes.length - 1)) * 100;
+                        const segEnd = ((ni + 1) / (nodes.length - 1)) * 100;
+                        const segRatio = (ratio - nodes[ni].mul) / (nodes[ni+1].mul - nodes[ni].mul);
+                        currentPos = segStart + segRatio * (segEnd - segStart);
+                        break;
+                    }
+                }
+                if (ratio >= nodes[nodes.length - 1].mul) currentPos = 100;
+                if (ratio < nodes[0].mul) currentPos = 0;
                 currentPos = Math.max(0, Math.min(100, currentPos));
 
                 const itemWrap = document.createElement('div');
@@ -866,6 +802,7 @@
                             <div class="pin-btn ${isPinned ? 'active' : ''}" onclick="togglePin(event, '${item['商品']}', '${(id || '').replace('.TW','').replace('.TWO','')}')">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="${isPinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
                             </div>
+                            <div class="rank">#${index + 1}</div>
                             <div class="stock-main">
                                 <h3>${item['商品']}</h3>
                                 <span>${(id || '').replace('.TW','').replace('.TWO','')}</span>
@@ -873,36 +810,36 @@
                             <div class="price-val">$${price}</div>
                         </div>
                         <div class="row-main-bottom">
+                            <div class="buy-val">${(parseInt(item['今日外資買超'])||0).toLocaleString()}</div>
+                            <div class="cost-val">$${cost.toFixed(1)}</div>
                             <div class="premium-val ${ratio >= 1.04 && ratio <= 1.10 ? 'in-zone' : ''}">${((ratio-1)*100).toFixed(2)}%</div>
                             <div class="gauge-wrapper">
                                 <div class="gauge-mini"><div class="zone-highlight"></div><div class="pointer" style="left: ${Math.min(100, (ratio-1)/0.15*100)}%"></div></div>
                             </div>
                         </div>
-                        <div class="rank" style="display:none">#${index + 1}</div>
-                        <div class="buy-val" style="display:none">${(parseInt(item['今日外資買超'])||0).toLocaleString()}</div>
-                        <div class="cost-val" style="display:none">$${cost.toFixed(1)}</div>
                     </div>
                     <div class="detail-panel">
                         <div class="path-title">
                             <h4>獲利路徑推演</h4>
-                            <div style="font-size: 0.9rem; color: var(--text-dim);">現價：<b style="color:var(--accent)">$${price}</b></div>
+                            <div style="font-size: 0.9rem; color: var(--text-dim);">外資成本：<b style="color:var(--text-title)">$${cost.toFixed(1)}</b> ｜ 現價：<b style="color:var(--accent)">$${price}</b></div>
                         </div>
                         <div class="path-chart" style="--current-pos: ${currentPos}%">
                             <div class="path-indicator">$${price}</div>
-                            <div class="path-line">
-                                <div class="path-progress"></div>
+                            <div class="path-bar-track">
+                                <div class="path-bar-fill"></div>
+                            </div>
+                            <div class="path-nodes">
                                 ${nodes.map((n, i) => {
-                                    const pos = ((n.mul - chartMin) / (chartMax - chartMin)) * 100;
-                                    const p = (cost * n.mul).toFixed(1);
+                                    const p = (cost * n.mul).toFixed(2);
                                     const isPassed = ratio >= n.mul;
                                     const isCurrent = !isPassed && (i === 0 || ratio >= nodes[i-1].mul);
+                                    const isLast = i === nodes.length - 1;
                                     return `
-                                        <div class="path-node" style="--node-pos: ${pos}%">
-                                            <div class="node-dot ${isPassed ? 'passed' : ''} ${isCurrent ? 'active' : ''}"></div>
-                                            <div class="node-info">
-                                                <div class="node-label" style="color: ${isPassed ? 'var(--success)' : isCurrent ? 'var(--accent)' : 'var(--text-dim)'}">${n.label}</div>
-                                                <div class="node-price">$${p}</div>
-                                            </div>
+                                        <div class="path-node-col">
+                                            <div class="node-price-top" style="color: ${isPassed ? '#22c55e' : isCurrent ? '#38bdf8' : ''}">$${p}</div>
+                                            <div class="node-dot ${isPassed ? 'passed' : ''} ${isCurrent ? 'active' : ''}">${isLast ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>' : ''}</div>
+                                            <div class="node-name" style="color: ${isPassed ? '#22c55e' : isCurrent ? '#38bdf8' : ''}">${n.label}</div>
+                                            <div class="zone-badge ${n.zone}">${n.icon} ${n.zoneName}</div>
                                         </div>
                                     `;
                                 }).join('')}
