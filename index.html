@@ -314,8 +314,23 @@
 
         /* 手機版極致優化 (Mobile Ultimate Optimization) */
         @media (max-width: 600px) {
-            .container { padding: 0 12px; }
-            header { padding: 0; margin-bottom: 25px; }
+            body { padding: 15px 0; width: 100vw; overflow-x: hidden; }
+            .container { 
+                padding: 0 12px; 
+                width: 100%; 
+                max-width: 100%; 
+                box-sizing: border-box; 
+                margin: 0;
+            }
+
+            header { 
+                padding: 0; 
+                margin-bottom: 25px; 
+                width: 100%; 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
             
             header h1 { font-size: 1.8rem; text-align: center; width: 100%; }
             .subtitle { text-align: center; margin-bottom: 5px; }
@@ -323,11 +338,28 @@
             header > div:last-child {
                 width: 100%;
                 gap: 12px !important;
+                flex-direction: column;
             }
 
             .search-container, .theme-toggle-group {
                 max-width: none;
                 width: 100%;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            .main-layout { 
+                display: block;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .left-col, .right-col { 
+                width: 100% !important; 
+                margin: 0; 
+                padding: 0;
+                display: block;
                 box-sizing: border-box;
             }
 
@@ -342,8 +374,9 @@
                 gap: 5px 15px;
                 padding: 18px 15px;
                 align-items: center;
-                min-height: 85px; /* 確保高度一致 */
+                min-height: 85px;
                 box-sizing: border-box;
+                width: 100%;
             }
 
             .pin-btn { grid-area: pin; display: flex; justify-content: center; }
@@ -394,18 +427,27 @@
                 border-color: rgba(0,0,0,0.05);
             }
 
-            /* 統一收藏專區的樣式，使其與下方卡片寬度與風格一致 */
             .favorites-zone {
                 margin-bottom: 25px;
                 border-radius: 18px;
                 padding: 15px;
                 width: 100%;
                 box-sizing: border-box;
+                background: var(--row-bg);
+                border: 1px solid var(--border);
+            }
+
+            .fav-list {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
             }
 
             .fav-card {
                 min-width: 0;
-                flex: 1 1 140px; /* 讓收藏卡片在手機上也能整齊排列 */
+                flex: 1 1 calc(50% - 8px);
+                box-sizing: border-box;
             }
 
             .fav-empty { 
@@ -414,6 +456,8 @@
                 border: 2px dashed var(--border);
                 margin: 0;
                 padding: 30px 15px;
+                width: 100%;
+                box-sizing: border-box;
             }
         }
 
