@@ -150,7 +150,7 @@
 
         .path-progress {
             position: absolute; height: 100%; left: 0; background: var(--success);
-            box-shadow: 0 0 15px var(--success); border-radius: 2px;
+            box-shadow: 0 0 15px var(--success); border-radius: 3px;
         }
 
         .path-node {
@@ -158,17 +158,24 @@
             display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
 
-        .node-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--node-bg); border: 3px solid var(--node-border); }
-        .node-dot.passed { background: var(--success); border-color: var(--success); box-shadow: 0 0 10px var(--success); }
-        .node-dot.active { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 15px var(--danger); }
+        .node-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--node-bg); border: 4px solid var(--node-border); z-index: 5; }
+        .node-dot.passed { background: var(--success); border-color: var(--success); box-shadow: 0 0 12px var(--success); }
+        .node-dot.active { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 18px var(--danger); }
+ 
+        .node-label { font-size: 1rem; font-weight: 800; white-space: nowrap; color: var(--text-title); line-height: 1.2; }
+        .node-price { font-size: 0.85rem; color: var(--text-dim); margin-top: 0; font-weight: 700; }
 
-        .node-label { font-size: 1rem; font-weight: 800; white-space: nowrap; color: var(--text-title); }
-        .node-price { font-size: 0.85rem; color: var(--text-dim); margin-top: -2px; font-weight: 600; }
-
-        /* 交錯排列標籤避免重疊 */
-        .path-node:nth-child(odd) { flex-direction: column; top: -8px; }
-        .path-node:nth-child(even) { flex-direction: column-reverse; top: auto; bottom: -8px; }
-        .path-node:nth-child(even) .node-label { margin-bottom: 2px; }
+        /* 極致交錯排列：確保 成本(1) 與 發動區(2) 不會打架 */
+        .path-node { transition: all 0.3s; }
+        /* 1, 3, 5 號點：標籤在下方，且距離拉開 */
+        .path-node:nth-child(even) { flex-direction: column; top: -10px; } 
+        /* 2, 4 號點：標籤在上方，且距離拉開 */
+        .path-node:nth-child(odd) { flex-direction: column-reverse; top: auto; bottom: -10px; }
+        
+        .path-node:nth-child(odd) .node-label { margin-bottom: 2px; }
+        .path-node:nth-child(odd) .node-price { margin-bottom: 12px; }
+        .path-node:nth-child(even) .node-label { margin-top: 2px; }
+        .path-node:nth-child(even) .node-price { margin-top: 0; }
         .path-node:nth-child(even) .node-price { margin-bottom: 10px; }
 
         .path-indicator {
@@ -392,16 +399,27 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
             }
 
+            .rank, .buy-val, .cost-val { display: none !important; }
+
             .row-main {
                 display: grid !important;
                 grid-template-columns: 35px 1fr 110px !important;
                 grid-template-areas: 
                     "pin name price"
                     "pin extra gauge" !important;
-                gap: 8px 15px !important;
+                gap: 5px 15px !important;
                 padding: 18px 15px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
+                min-height: 90px;
+            }
+
+            .stock-main h3 { font-size: 1.1rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .price-val { font-weight: 900 !important; font-size: 1.2rem !important; }
+            
+            .row-item.expanded .detail-panel {
+                max-height: 500px;
+                padding: 25px 15px 50px 15px;
             }
 
             .favorites-zone {
@@ -412,14 +430,14 @@
                 box-sizing: border-box !important;
             }
 
-            .fav-list { gap: 8px; }
+            .fav-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; }
             .fav-card { flex: 1 1 calc(50% - 4px); }
 
             /* 手機版圖表字體優化 */
-            .path-chart { margin: 80px 10px 60px 10px; height: 140px; }
-            .node-label { font-size: 0.85rem !important; }
+            .path-chart { margin: 85px 10px 70px 10px; height: 140px; overflow: visible; }
+            .node-label { font-size: 0.85rem !important; letter-spacing: -0.5px; }
             .node-price { font-size: 0.75rem !important; }
-            .path-indicator { font-size: 0.9rem !important; top: -50px !important; padding: 4px 12px !important; }
+            .path-indicator { font-size: 0.9rem !important; top: -55px !important; padding: 4px 12px !important; }
             .path-title h4 { font-size: 1rem; }
         }
 
