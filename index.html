@@ -23,25 +23,31 @@
             --card-inner: rgba(255, 255, 255, 0.05);
             --node-bg: #1e293b;
             --node-border: #334155;
+            --gauge-track: rgba(255, 255, 255, 0.1);
+            --gauge-pointer: #ffffff;
+            --gauge-shadow: rgba(255, 255, 255, 0.5);
         }
 
         [data-theme="light"] {
-            --bg: #f3f4f6;
-            --row-bg: rgba(255, 255, 255, 0.8);
+            --bg: #f8fafc;
+            --row-bg: #ffffff;
             --accent: #0284c7;
             --gold: #b45309;
             --success: #059669;
             --warning: #d97706;
             --danger: #dc2626;
             --extreme: #db2777;
-            --border: rgba(0, 0, 0, 0.1);
-            --text-main: #374151;
-            --text-dim: #6b7280;
-            --text-title: #111827;
-            --header-bg: rgba(243, 244, 246, 0.8);
-            --card-inner: rgba(0, 0, 0, 0.03);
-            --node-bg: #e5e7eb;
-            --node-border: #d1d5db;
+            --border: rgba(0, 0, 0, 0.08);
+            --text-main: #334155;
+            --text-dim: #64748b;
+            --text-title: #0f172a;
+            --header-bg: rgba(248, 250, 252, 0.8);
+            --card-inner: rgba(0, 0, 0, 0.04);
+            --node-bg: #f1f5f9;
+            --node-border: #cbd5e1;
+            --gauge-track: rgba(0, 0, 0, 0.08);
+            --gauge-pointer: var(--accent);
+            --gauge-shadow: rgba(2, 132, 199, 0.3);
         }
 
         body {
@@ -102,13 +108,14 @@
         .buy-val { font-size: 1.1rem; font-weight: 600; color: var(--success); }
         
         .gauge-mini {
-            height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px;
-            position: relative; margin-right: 20px; flex-grow: 1;
+            height: 6px; background: var(--gauge-track); border-radius: 3px;
+            position: relative; flex-grow: 1;
         }
         .zone-highlight { position: absolute; height: 100%; left: 26.6%; width: 40%; background: var(--gold); opacity: 0.3; }
         .pointer {
-            position: absolute; width: 10px; height: 10px; background: #fff;
-            border-radius: 50%; top: -3px; box-shadow: 0 0 10px #fff;
+            position: absolute; width: 12px; height: 12px; background: var(--gauge-pointer);
+            border-radius: 50%; top: -3px; box-shadow: 0 0 10px var(--gauge-shadow);
+            border: 2px solid var(--bg);
         }
 
         /* 獲利路徑推演面板 */
@@ -305,36 +312,45 @@
                 justify-content: space-around;
             }
 
-            /* 簡化表格欄位：隱藏排名、今日買超、外資成本 */
-            .thead-row, .row-main {
-                grid-template-columns: 35px 1.5fr 0.8fr 1fr 1fr;
-                padding-left: 10px;
-                padding-right: 10px;
-            }
+        /* 手機版極致優化 (Mobile Ultimate Optimization) */
+        @media (max-width: 600px) {
+            .thead-row { display: none; }
             
-            .thead-row div:nth-child(2), /* 排名 */
-            .thead-row div:nth-child(5), /* 今日買超 */
-            .thead-row div:nth-child(6), /* 外資成本 */
-            .row-main .rank,
-            .row-main .buy-val,
-            .row-main .cost-val {
-                display: none;
+            .row-main {
+                display: grid;
+                grid-template-columns: 40px 1fr auto;
+                grid-template-rows: auto auto;
+                grid-template-areas: 
+                    "pin name price"
+                    "pin premium gauge";
+                gap: 8px 15px;
+                padding: 15px;
+                align-items: center;
             }
 
-            .stock-main h3 { font-size: 0.95rem; }
-            .stock-main span { font-size: 0.7rem; }
-            .price-val { font-size: 1rem; }
-            .premium-val { font-size: 0.9rem; }
-
-            .row-item.expanded .detail-panel {
-                padding: 20px 15px;
+            .pin-btn { grid-area: pin; }
+            .stock-main { grid-area: name; }
+            .price-val { grid-area: price; text-align: right; font-weight: 800; }
+            .premium-val { 
+                grid-area: premium; 
+                font-size: 0.85rem; 
+                padding: 2px 8px; 
+                background: var(--card-inner); 
+                border-radius: 6px;
+                width: fit-content;
+            }
+            .gauge-wrapper { 
+                grid-area: gauge; 
+                width: 100px; 
+                display: flex; 
+                align-items: center; 
             }
 
-            .path-title h4 { font-size: 1rem; }
-            .path-chart { margin: 45px 5px 10px 5px; }
-            .node-label { font-size: 0.7rem; }
-            .node-price { font-size: 0.65rem; }
-            .path-indicator { font-size: 0.75rem; top: -35px; padding: 2px 8px; }
+            .rank, .buy-val, .cost-val { display: none; }
+
+            .stock-main h3 { font-size: 1rem; }
+            .row-item { margin-bottom: 12px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+            [data-theme="light"] .row-item { box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         }
 
         @keyframes fadeIn {
@@ -631,7 +647,7 @@
                         <div class="buy-val">${(parseInt(item['今日外資買超'])||0).toLocaleString()}</div>
                         <div class="cost-val">$${cost.toFixed(1)}</div>
                         <div class="premium-val ${ratio >= 1.04 && ratio <= 1.10 ? 'in-zone' : ''}">${((ratio-1)*100).toFixed(2)}%</div>
-                        <div style="display: flex; align-items: center;">
+                        <div class="gauge-wrapper">
                             <div class="gauge-mini"><div class="zone-highlight"></div><div class="pointer" style="left: ${Math.min(100, (ratio-1)/0.15*100)}%"></div></div>
                         </div>
                     </div>
