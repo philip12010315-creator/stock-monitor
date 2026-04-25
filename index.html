@@ -137,55 +137,104 @@
         }
         .path-title h4 { margin: 0; font-size: 1.2rem; color: var(--text-title); font-weight: 600; }
 
-        /* 路徑圖表核心 */
+        /* 獲利路徑推演圖表 - 全新視覺優化 (Futuristic Timeline) */
         .path-chart {
             position: relative;
-            height: 150px;
-            margin: 80px 20px 40px 20px;
+            height: 180px;
+            margin: 100px 25px 60px 25px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .path-line {
-            height: 4px; background: #334155; border-radius: 2px; position: relative;
+            height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); top: 50%; transform: translateY(-50%);
         }
 
         .path-progress {
-            position: absolute; height: 100%; left: 0; background: var(--success);
-            box-shadow: 0 0 15px var(--success); border-radius: 3px;
+            position: absolute; height: 100%; left: 0; 
+            background: linear-gradient(90deg, var(--accent) 0%, var(--success) 100%);
+            box-shadow: 0 0 20px var(--success); border-radius: 4px;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .path-node {
-            position: absolute; top: -8px; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            position: absolute; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 10;
         }
 
-        .node-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--node-bg); border: 4px solid var(--node-border); z-index: 5; }
-        .node-dot.passed { background: var(--success); border-color: var(--success); box-shadow: 0 0 12px var(--success); }
-        .node-dot.active { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 18px var(--danger); }
- 
-        .node-label { font-size: 1rem; font-weight: 800; white-space: nowrap; color: var(--text-title); line-height: 1.2; }
-        .node-price { font-size: 0.85rem; color: var(--text-dim); margin-top: 0; font-weight: 700; }
-
-        /* 極致交錯排列：確保 成本(1) 與 發動區(2) 不會打架 */
-        .path-node { transition: all 0.3s; }
-        /* 1, 3, 5 號點：標籤在下方，且距離拉開 */
-        .path-node:nth-child(even) { flex-direction: column; top: -10px; } 
-        /* 2, 4 號點：標籤在上方，且距離拉開 */
-        .path-node:nth-child(odd) { flex-direction: column-reverse; top: auto; bottom: -10px; }
+        .node-dot { 
+            width: 24px; height: 24px; border-radius: 50%; 
+            background: var(--bg); border: 4px solid #334155; 
+            transition: all 0.4s;
+            position: relative;
+        }
         
-        .path-node:nth-child(odd) .node-label { margin-bottom: 2px; }
-        .path-node:nth-child(odd) .node-price { margin-bottom: 12px; }
-        .path-node:nth-child(even) .node-label { margin-top: 2px; }
-        .path-node:nth-child(even) .node-price { margin-top: 0; }
-        .path-node:nth-child(even) .node-price { margin-bottom: 10px; }
+        .node-dot.passed { 
+            background: var(--success); border-color: var(--success); 
+            box-shadow: 0 0 15px var(--success); 
+        }
+        
+        .node-dot.active { 
+            background: var(--danger); border-color: var(--danger); 
+            box-shadow: 0 0 20px var(--danger);
+            animation: pulse-node 2s infinite;
+        }
+
+        @keyframes pulse-node {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* 標籤容器 - 強化對比與美感 */
+        .node-info {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        /* 交錯排版 */
+        .path-node.is-down .node-info { top: 35px; }
+        .path-node.is-up .node-info { bottom: 35px; }
+
+        .node-label { font-size: 0.95rem; font-weight: 800; color: var(--text-title); margin-bottom: 2px; }
+        .node-price { font-size: 0.8rem; color: var(--text-dim); font-weight: 700; }
 
         .path-indicator {
-            position: absolute; top: -45px; transform: translateX(-50%);
-            background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 8px;
-            font-weight: bold; font-size: 0.9rem; z-index: 10;
+            position: absolute; top: -75px; transform: translateX(-50%);
+            background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 12px;
+            font-weight: 900; font-size: 1rem; z-index: 20;
+            box-shadow: 0 5px 20px rgba(56, 189, 248, 0.4);
+            animation: bounce-indicator 2s infinite ease-in-out;
         }
+        
         .path-indicator::after {
-            content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-            border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid var(--accent);
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid var(--accent);
+        }
+
+        @keyframes ripple-active {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        .path-progress::after {
+            content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 15px #fff; animation: ripple-active 1.5s infinite;
         }
 
         /* 搜尋框樣式 */
@@ -389,15 +438,11 @@
             .path-title { margin-bottom: 30px !important; }
             .path-title h4 { font-size: 1rem !important; }
 
-            .path-chart { 
-                margin: 90px 10px 80px 10px !important; 
-                height: 120px !important; 
-                overflow: visible !important; 
-            }
-            
-            .node-label { font-size: 0.85rem !important; font-weight: 800 !important; }
-            .node-price { font-size: 0.75rem !important; opacity: 0.8; }
-            .path-indicator { font-size: 0.9rem !important; top: -60px !important; padding: 5px 15px !important; }
+            .path-chart { margin: 100px 5px 80px 5px !important; height: 160px !important; }
+            .node-info { padding: 6px 8px !important; border-radius: 10px !important; }
+            .node-label { font-size: 0.8rem !important; }
+            .node-price { font-size: 0.7rem !important; }
+            .path-indicator { font-size: 0.85rem !important; top: -65px !important; padding: 5px 12px !important; }
 
             .favorites-zone { margin-bottom: 30px !important; border-radius: 20px !important; }
             .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
@@ -710,15 +755,18 @@
                             <div class="path-indicator" style="left: ${currentPos}%">$${price}</div>
                             <div class="path-line">
                                 <div class="path-progress" style="width: ${currentPos}%"></div>
-                                ${nodes.map(n => {
+                                ${nodes.map((n, index) => {
                                     const pos = ((n.mul - chartMin) / (chartMax - chartMin)) * 100;
                                     const p = (cost * n.mul).toFixed(1);
                                     const isPassed = ratio >= n.mul;
+                                    const isUp = index % 2 !== 0; // 0,2,4 下, 1,3 上
                                     return `
-                                        <div class="path-node" style="left: ${pos}%">
+                                        <div class="path-node ${isUp ? 'is-up' : 'is-down'}" style="left: ${pos}%">
                                             <div class="node-dot ${isPassed ? 'passed' : ''}"></div>
-                                            <div class="node-label" style="color: ${isPassed ? '#fff' : 'var(--text-dim)'}">${n.label}</div>
-                                            <div class="node-price">$${p}</div>
+                                            <div class="node-info">
+                                                <div class="node-label" style="color: ${isPassed ? 'var(--text-title)' : 'var(--text-dim)'}">${n.label}</div>
+                                                <div class="node-price">$${p}</div>
+                                            </div>
                                         </div>
                                     `;
                                 }).join('')}
