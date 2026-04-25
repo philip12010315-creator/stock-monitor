@@ -298,147 +298,109 @@
             .fav-card { min-width: 180px; flex: 1; }
         }
 
-        /* 手機版優化 (Mobile Optimization) */
-        @media (max-width: 768px) {
-            body { padding: 20px 10px; }
-            
-            header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 20px;
-                padding: 0 10px;
-            }
-
-            header > div:last-child {
-                flex-direction: column;
-                align-items: stretch !important;
-                gap: 15px !important;
-            }
-            
-            .search-container {
-                margin-left: 0;
-                max-width: none;
-                width: 100%;
-            }
-
-            .theme-toggle-group {
-                justify-content: space-around;
-            }
-
+        /* 全域盒模型重設 */
         * { box-sizing: border-box; }
 
-        /* 手機版對稱優化 (Mobile Symmetry Optimization) */
+        /* 手機版全面優化 (Ground-Zero Mobile Optimization) */
         @media (max-width: 600px) {
             html, body { width: 100%; overflow-x: hidden; margin: 0; padding: 0; }
-            body { padding-top: 20px; padding-bottom: 40px; }
+            body { padding: 15px 0; background-color: var(--bg); }
             
-            .container { 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                padding: 0 20px !important; 
-                margin: 0 !important;
-                box-sizing: border-box !important;
-            }
+            .container { width: 100% !important; max-width: 100% !important; padding: 0 15px !important; margin: 0 !important; }
 
             header { 
-                width: 100% !important;
-                margin: 0 0 25px 0 !important; 
-                padding: 0 !important; 
+                margin-bottom: 25px; 
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
+                text-align: center;
             }
             
-            header h1 { font-size: 1.8rem; text-align: center; width: 100%; margin-bottom: 5px; }
-            .subtitle { text-align: center; width: 100%; margin-bottom: 15px; }
+            header h1 { font-size: 1.7rem !important; margin-bottom: 8px !important; }
+            .subtitle { font-size: 0.85rem; margin-bottom: 20px; }
 
-            /* 搜尋與按鈕容器 */
             header > div:last-child {
                 width: 100% !important;
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 12px !important;
-                margin: 0 !important;
-                padding: 0 !important;
             }
 
-            .search-container {
-                width: 100% !important;
-                max-width: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
+            .search-container { width: 100% !important; margin: 0 !important; }
+            .theme-toggle-group { width: 100% !important; margin: 0 !important; justify-content: space-around !important; }
 
-            .theme-toggle-group {
-                width: 100% !important;
-                margin: 0 !important;
-                display: flex !important;
-                justify-content: space-around !important;
-            }
-
-            .main-layout { 
-                width: 100% !important;
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            .left-col, .right-col { 
-                width: 100% !important; 
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
+            .main-layout, .left-col, .right-col { width: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; }
             .thead-row { display: none !important; }
-            
-            .row-item { 
-                width: 100% !important;
-                margin: 0 0 12px 0 !important; 
-                border-radius: 18px !important; 
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-            }
 
-            .rank, .buy-val, .cost-val { display: none !important; }
+            /* 卡片內容簡化 (防止跑版核心) */
+            .row-item { 
+                margin-bottom: 12px; 
+                border-radius: 20px !important; 
+                overflow: hidden !important; 
+                border: 1px solid var(--border) !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+            }
 
             .row-main {
-                display: grid !important;
-                grid-template-columns: 35px 1fr 110px !important;
-                grid-template-areas: 
-                    "pin name price"
-                    "pin extra gauge" !important;
-                gap: 5px 15px !important;
-                padding: 18px 15px !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-                min-height: 90px;
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 18px !important;
+                gap: 12px !important;
+                min-height: auto !important;
             }
 
-            .stock-main h3 { font-size: 1.1rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .price-val { font-weight: 900 !important; font-size: 1.2rem !important; }
+            /* 隱藏桌機版所有欄位 */
+            .rank, .buy-val, .cost-val { display: none !important; }
+
+            /* 第一排：名稱與價格 */
+            .row-main > *:nth-child(n) { order: 10; } /* 預設排序 */
             
-            .row-item.expanded .detail-panel {
-                max-height: 500px;
-                padding: 25px 15px 50px 15px;
+            .pin-btn { position: absolute; top: 15px; left: 15px; order: 1 !important; z-index: 10; }
+            .stock-main { order: 2 !important; padding-left: 25px; text-align: left; }
+            .stock-main h3 { font-size: 1.15rem !important; margin: 0 !important; }
+            
+            .price-val { 
+                position: absolute; top: 15px; right: 15px; 
+                order: 3 !important; 
+                font-size: 1.3rem !important; 
+                font-weight: 900 !important; 
             }
 
-            .favorites-zone {
-                width: 100% !important;
-                margin: 0 0 25px 0 !important;
-                padding: 15px !important;
-                border-radius: 18px !important;
-                box-sizing: border-box !important;
+            /* 第二排：標籤與儀表板 */
+            .premium-val { 
+                order: 4 !important; 
+                width: fit-content !important; 
+                font-size: 0.85rem !important; 
+                padding: 4px 12px !important;
+                margin-left: 25px;
             }
+            
+            .gauge-wrapper { 
+                order: 5 !important; 
+                width: 100% !important; 
+                padding: 5px 0 0 25px !important;
+            }
+            .gauge-mini { height: 6px !important; }
 
-            .fav-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; }
-            .fav-card { flex: 1 1 calc(50% - 4px); }
+            /* 展開面板優化 */
+            .detail-panel { padding: 0 !important; }
+            .row-item.expanded .detail-panel { padding: 25px 15px 60px 15px !important; }
+            
+            .path-title { margin-bottom: 30px !important; }
+            .path-title h4 { font-size: 1rem !important; }
 
-            /* 手機版圖表字體優化 */
-            .path-chart { margin: 85px 10px 70px 10px; height: 140px; overflow: visible; }
-            .node-label { font-size: 0.85rem !important; letter-spacing: -0.5px; }
-            .node-price { font-size: 0.75rem !important; }
-            .path-indicator { font-size: 0.9rem !important; top: -55px !important; padding: 4px 12px !important; }
-            .path-title h4 { font-size: 1rem; }
+            .path-chart { 
+                margin: 90px 10px 80px 10px !important; 
+                height: 120px !important; 
+                overflow: visible !important; 
+            }
+            
+            .node-label { font-size: 0.85rem !important; font-weight: 800 !important; }
+            .node-price { font-size: 0.75rem !important; opacity: 0.8; }
+            .path-indicator { font-size: 0.9rem !important; top: -60px !important; padding: 5px 15px !important; }
+
+            .favorites-zone { margin-bottom: 30px !important; border-radius: 20px !important; }
+            .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
         }
 
         @keyframes fadeIn {
