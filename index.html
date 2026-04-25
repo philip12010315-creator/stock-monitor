@@ -144,12 +144,12 @@
         .path-chart {
             position: relative;
             margin: 15px 0;
-            padding: 70px 10px 20px 10px;
+            padding: 100px 10px 20px 10px; /* more top space */
         }
 
         /* 現價浮動指標 */
         .path-indicator {
-            position: absolute; top: 5px; left: var(--current-pos, 0%); transform: translateX(-50%);
+            position: absolute; bottom: 52px; left: var(--current-pos, 0%); transform: translateX(-50%);
             background: var(--accent); color: #fff; padding: 5px 14px; border-radius: 10px;
             font-weight: 900; font-size: 0.95rem; z-index: 20;
             box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
@@ -162,10 +162,13 @@
 
         /* 進度條軌道 */
         .path-bar-track {
-            position: relative; height: 10px; 
+            position: absolute;
+            top: 33px; left: 15px; right: 15px;
+            height: 10px;
             background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
-            border-radius: 5px; margin-bottom: 0;
+            border-radius: 5px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 1;
         }
         .path-bar-fill {
             position: absolute; height: 100%; left: 0; border-radius: 5px;
@@ -178,7 +181,6 @@
         /* 節點容器 - 等距排列 */
         .path-nodes {
             display: flex; justify-content: space-between; position: relative;
-            margin-top: -5px; /* 讓 dot 蓋在 bar 上 */
         }
         .path-node-col {
             display: flex; flex-direction: column; align-items: center;
@@ -219,15 +221,19 @@
         /* 價格（上方） */
         .node-price-top {
             font-size: 0.8rem; color: var(--text-dim); font-weight: 600;
-            margin-bottom: 6px; white-space: nowrap;
+            margin-bottom: 12px; /* space above bar */
+            white-space: nowrap;
             overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            z-index: 2;
         }
 
         /* 名稱（下方） */
         .node-name {
             font-size: 0.85rem; font-weight: 800; color: var(--text-title);
-            margin-top: 8px; white-space: nowrap;
+            margin-top: 12px; /* space below bar */
+            white-space: nowrap;
             overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            z-index: 2;
         }
 
         /* 區域標籤（最底部） */
@@ -495,8 +501,8 @@
             /* 手機版圖表優化 */
             .path-chart { padding: 15px 5px 10px 5px !important; margin: 10px 0 !important; }
             .path-indicator { display: none !important; } /* 手機版隱藏浮動指標，title已有價格 */
-            .path-bar-track { height: 8px !important; }
-            .node-price-top { font-size: 0.65rem !important; }
+            .path-bar-track { height: 8px !important; top: 24px !important; }
+            .node-price-top { font-size: 0.65rem !important; margin-bottom: 8px !important; }
             .node-name { font-size: 0.75rem !important; margin-top: 6px !important; }
             .zone-badge { font-size: 0.6rem !important; padding: 2px 6px !important; }
             .node-dot { width: 16px !important; height: 16px !important; border-width: 2px !important; }
@@ -824,11 +830,11 @@
                             <div style="font-size: 0.9rem; color: var(--text-dim);">外資成本：<b style="color:var(--text-title)">$${cost.toFixed(1)}</b> ｜ 現價：<b style="color:var(--accent)">$${price}</b></div>
                         </div>
                         <div class="path-chart" style="--current-pos: ${currentPos}%">
-                            <div class="path-indicator">$${price}</div>
-                            <div class="path-bar-track">
-                                <div class="path-bar-fill"></div>
-                            </div>
                             <div class="path-nodes">
+                                <div class="path-bar-track">
+                                    <div class="path-bar-fill"></div>
+                                    <div class="path-indicator">$${price}</div>
+                                </div>
                                 ${nodes.map((n, i) => {
                                     const p = (cost * n.mul).toFixed(2);
                                     const isPassed = ratio >= n.mul;
@@ -837,7 +843,7 @@
                                     return `
                                         <div class="path-node-col">
                                             <div class="node-price-top" style="color: ${isPassed ? '#22c55e' : isCurrent ? '#38bdf8' : ''}">$${p}</div>
-                                            <div class="node-dot ${isPassed ? 'passed' : ''} ${isCurrent ? 'active' : ''}">${isLast ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>' : ''}</div>
+                                            <div class="node-dot ${isPassed ? 'passed' : ''} ${isCurrent ? 'active' : ''}"></div>
                                             <div class="node-name" style="color: ${isPassed ? '#22c55e' : isCurrent ? '#38bdf8' : ''}">${n.label}</div>
                                             <div class="zone-badge ${n.zone}">${n.icon} ${n.zoneName}</div>
                                         </div>
