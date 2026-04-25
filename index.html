@@ -128,7 +128,7 @@
         }
 
         .row-item.expanded .detail-panel {
-            max-height: 400px;
+            max-height: 800px;
             padding: 30px;
         }
 
@@ -388,13 +388,18 @@
             .main-layout, .left-col, .right-col { width: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; }
             .thead-row { display: none !important; }
 
-            /* 卡片內容簡化 (防止跑版核心) */
+            /* 卡片內容簡化 */
             .row-item { 
                 margin-bottom: 12px; 
                 border-radius: 20px !important; 
-                overflow: hidden !important; 
+                overflow: visible !important; 
                 border: 1px solid var(--border) !important;
                 box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+            }
+
+            .row-item.expanded .detail-panel {
+                max-height: none !important;
+                padding: 20px 15px 30px 15px !important;
             }
 
             /* ===== 卡片佈局：靠左對齊，左星星-名稱-右價格 ===== */
