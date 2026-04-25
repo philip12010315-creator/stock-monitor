@@ -278,6 +278,65 @@
             .fav-card { min-width: 180px; flex: 1; }
         }
 
+        /* 手機版優化 (Mobile Optimization) */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+                padding: 0 10px;
+            }
+
+            header > div:last-child {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 15px !important;
+            }
+            
+            .search-container {
+                margin-left: 0;
+                max-width: none;
+                width: 100%;
+            }
+
+            .theme-toggle-group {
+                justify-content: space-around;
+            }
+
+            /* 簡化表格欄位：隱藏排名、今日買超、外資成本 */
+            .thead-row, .row-main {
+                grid-template-columns: 35px 1.5fr 0.8fr 1fr 1fr;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .thead-row div:nth-child(2), /* 排名 */
+            .thead-row div:nth-child(5), /* 今日買超 */
+            .thead-row div:nth-child(6), /* 外資成本 */
+            .row-main .rank,
+            .row-main .buy-val,
+            .row-main .cost-val {
+                display: none;
+            }
+
+            .stock-main h3 { font-size: 0.95rem; }
+            .stock-main span { font-size: 0.7rem; }
+            .price-val { font-size: 1rem; }
+            .premium-val { font-size: 0.9rem; }
+
+            .row-item.expanded .detail-panel {
+                padding: 20px 15px;
+            }
+
+            .path-title h4 { font-size: 1rem; }
+            .path-chart { margin: 45px 5px 10px 5px; }
+            .node-label { font-size: 0.7rem; }
+            .node-price { font-size: 0.65rem; }
+            .path-indicator { font-size: 0.75rem; top: -35px; padding: 2px 8px; }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
