@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>外資買超排行榜 - Profit Path Pro</title>
+    <title>成本推演模型 - Profit Path Pro</title>
     <style>
         :root {
             /* 預設深色模式 (Dark) */
@@ -140,8 +140,8 @@
         /* 路徑圖表核心 */
         .path-chart {
             position: relative;
-            height: 100px;
-            margin: 60px 20px 20px 20px;
+            height: 150px;
+            margin: 80px 20px 40px 20px;
         }
 
         .path-line {
@@ -162,8 +162,14 @@
         .node-dot.passed { background: var(--success); border-color: var(--success); box-shadow: 0 0 10px var(--success); }
         .node-dot.active { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 15px var(--danger); }
 
-        .node-label { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
-        .node-price { font-size: 0.75rem; color: var(--text-dim); margin-top: -5px; }
+        .node-label { font-size: 1rem; font-weight: 800; white-space: nowrap; color: var(--text-title); }
+        .node-price { font-size: 0.85rem; color: var(--text-dim); margin-top: -2px; font-weight: 600; }
+
+        /* 交錯排列標籤避免重疊 */
+        .path-node:nth-child(odd) { flex-direction: column; top: -8px; }
+        .path-node:nth-child(even) { flex-direction: column-reverse; top: auto; bottom: -8px; }
+        .path-node:nth-child(even) .node-label { margin-bottom: 2px; }
+        .path-node:nth-child(even) .node-price { margin-bottom: 10px; }
 
         .path-indicator {
             position: absolute; top: -45px; transform: translateX(-50%);
@@ -408,6 +414,13 @@
 
             .fav-list { gap: 8px; }
             .fav-card { flex: 1 1 calc(50% - 4px); }
+
+            /* 手機版圖表字體優化 */
+            .path-chart { margin: 80px 10px 60px 10px; height: 140px; }
+            .node-label { font-size: 0.85rem !important; }
+            .node-price { font-size: 0.75rem !important; }
+            .path-indicator { font-size: 0.9rem !important; top: -50px !important; padding: 4px 12px !important; }
+            .path-title h4 { font-size: 1rem; }
         }
 
         @keyframes fadeIn {
@@ -460,7 +473,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>外資買超排行榜</h1>
+                <h1>成本推演模型</h1>
                 <div class="subtitle" id="update-info">同步中...</div>
             </div>
             <div style="display: flex; align-items: center; gap: 20px;">
