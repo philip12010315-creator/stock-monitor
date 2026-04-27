@@ -255,6 +255,39 @@
         .zone-badge.danger { color: #ef4444; border: 1px solid rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
         .zone-badge.extreme { color: #dc2626; border: 1px solid rgba(220,38,38,0.5); background: rgba(220,38,38,0.12); }
 
+        /* 跑馬燈樣式 */
+        .status-marquee-container {
+            width: 100%;
+            overflow: hidden;
+            background: rgba(56, 189, 248, 0.05);
+            border-radius: 30px;
+            padding: 6px 0;
+            margin-top: 12px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+            position: relative;
+        }
+        .status-marquee-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-scroll 40s linear infinite;
+        }
+        .status-item {
+            display: inline-block;
+            margin-right: 80px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .status-item b {
+            color: var(--accent);
+            margin-left: 5px;
+            font-weight: 700;
+        }
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
 
         /* 搜尋框樣式 */
         .search-container {
@@ -628,9 +661,11 @@
 <body>
     <div class="container">
         <header>
-            <div>
+            <div style="width: 100%;">
                 <h1>成本推演模型</h1>
-                <div class="subtitle" id="update-info">同步中...</div>
+                <div class="status-marquee-container">
+                    <div id="update-info" class="status-marquee-content">同步中...</div>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div class="search-container">
@@ -674,6 +709,7 @@
                     const res = JSON.parse(event.data);
                     if (res.type === 'UPDATE') {
                         allData = res.data;
+                        fileDate = res.fileDate || ''; // 接收後端解析的日期
                         updateStatusInfo();
                         render();
                     }
@@ -685,6 +721,7 @@
 
         let expandedId = null;
         let allData = [];
+        let fileDate = ''; // 新增：存放資料日期
         let searchQuery = '';
         let favorites = JSON.parse(localStorage.getItem('stock_favorites') || '[]');
 
@@ -715,7 +752,13 @@
                 const response = await fetch('data.json');
                 if (response.ok) {
                     const res = await response.json();
-                    allData = res;
+                    // 支援新舊格式
+                    if (res.stocks) {
+                        allData = res.stocks;
+                        fileDate = res.date || '';
+                    } else {
+                        allData = res;
+                    }
                     updateStatusInfo();
                     render();
                 }
@@ -748,6 +791,7 @@
                 const res = JSON.parse(event.data);
                 if (res.type === 'UPDATE') {
                     allData = res.data;
+                    fileDate = res.fileDate || '';
                     updateStatusInfo();
                     render();
                 }
@@ -755,33 +799,36 @@
         }
 
         function updateStatusInfo() {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
-                           now.getMinutes().toString().padStart(2, '0') + ':' + 
-                           now.getSeconds().toString().padStart(2, '0');
+            if (allData.length === 0) return;
             
-            let infoHtml = `最後更新：${timeStr}`;
+            let items = [];
             
-            if (allData.length > 0) {
-                // 嘗試抓取大盤價格 (從第一筆資料抓取)
-                const marketPrice = allData[0]['大盤收盤價'];
-                if (marketPrice) {
-                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">大盤：<b style="color:var(--text-title)">${parseFloat(marketPrice).toLocaleString()}</b></span>`;
-                }
-
-                if (searchQuery) {
-                    const filteredCount = allData.filter(item => {
-                        const name = (item['商品'] || '').toLowerCase();
-                        const code = (item['代碼'] || '').replace('.TW','').replace('.TWO','').toLowerCase();
-                        return name.includes(searchQuery) || code.includes(searchQuery);
-                    }).length;
-                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">符合條件：<b style="color:var(--accent)">${filteredCount}</b> / ${allData.length} 檔</span>`;
-                } else {
-                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">監控總數：<b style="color:var(--accent)">${allData.length}</b> 檔</span>`;
-                }
+            // 1. 資料日期
+            if (fileDate) {
+                items.push(`<span class="status-item">📅 資料日期：<b>${fileDate}</b></span>`);
             }
             
-            document.getElementById('update-info').innerHTML = infoHtml;
+            // 2. 大盤價格
+            const marketPrice = allData[0]['大盤收盤價'];
+            if (marketPrice) {
+                items.push(`<span class="status-item">📈 加權指數：<b>${parseFloat(marketPrice).toLocaleString()}</b></span>`);
+            }
+            
+            // 3. 監控數量 / 符合條件
+            if (searchQuery) {
+                const filteredCount = allData.filter(item => {
+                    const name = (item['商品'] || '').toLowerCase();
+                    const code = (item['代碼'] || '').replace('.TW','').replace('.TWO','').toLowerCase();
+                    return name.includes(searchQuery) || code.includes(searchQuery);
+                }).length;
+                items.push(`<span class="status-item">🔍 符合條件：<b>${filteredCount} / ${allData.length}</b> 檔</span>`);
+            } else {
+                items.push(`<span class="status-item">📊 監控總數：<b>${allData.length}</b> 檔</span>`);
+            }
+
+            // 為了讓跑馬燈看起來更長，我們重複幾次內容
+            const content = items.join('') + items.join('');
+            document.getElementById('update-info').innerHTML = content;
         }
 
         document.getElementById('search-input').addEventListener('input', (e) => {
