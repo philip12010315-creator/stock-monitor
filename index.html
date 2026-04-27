@@ -763,6 +763,12 @@
             let infoHtml = `最後更新：${timeStr}`;
             
             if (allData.length > 0) {
+                // 嘗試抓取大盤價格 (從第一筆資料抓取)
+                const marketPrice = allData[0]['大盤收盤價'];
+                if (marketPrice) {
+                    infoHtml += `<span style="margin-left:15px; opacity: 0.5;">|</span> <span style="margin-left:15px;">大盤：<b style="color:var(--text-title)">${parseFloat(marketPrice).toLocaleString()}</b></span>`;
+                }
+
                 if (searchQuery) {
                     const filteredCount = allData.filter(item => {
                         const name = (item['商品'] || '').toLowerCase();
