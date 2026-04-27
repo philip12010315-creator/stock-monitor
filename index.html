@@ -269,12 +269,11 @@
         }
         .status-marquee-content {
             display: inline-block;
-            padding-left: 100%;
-            animation: marquee-scroll 40s linear infinite;
+            animation: marquee-scroll 25s linear infinite;
         }
         .status-item {
             display: inline-block;
-            margin-right: 80px;
+            margin-right: 60px;
             font-size: 0.85rem;
             color: var(--text-dim);
         }
@@ -826,8 +825,9 @@
                 items.push(`<span class="status-item">📊 監控總數：<b>${allData.length}</b> 檔</span>`);
             }
 
-            // 為了讓跑馬燈看起來更長，我們重複幾次內容
-            const content = items.join('') + items.join('');
+            // 為了實現「無縫循環」，我們將內容重複 4 次
+            const rawContent = items.join('');
+            const content = rawContent + rawContent + rawContent + rawContent;
             document.getElementById('update-info').innerHTML = content;
         }
 
