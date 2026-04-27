@@ -284,7 +284,7 @@
         }
         @keyframes marquee-scroll {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+            100% { transform: translateX(-50%); }
         }
 
 
@@ -548,6 +548,16 @@
 
             .favorites-zone { display: none !important; }
             .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
+
+            /* 手機版跑馬燈滿版化 */
+            .status-marquee-container {
+                width: 100vw !important;
+                margin-left: -15px !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+                background: rgba(56, 189, 248, 0.1) !important;
+            }
         }
 
         /* 手機版懸浮按鈕 */
@@ -825,9 +835,9 @@
                 items.push(`<span class="status-item">📊 監控總數：<b>${allData.length}</b> 檔</span>`);
             }
 
-            // 為了實現「無縫循環」，我們將內容重複 4 次
+            // 真正的無縫循環：複製一份內容，並配合 CSS 的 -50% 位移
             const rawContent = items.join('');
-            const content = rawContent + rawContent + rawContent + rawContent;
+            const content = rawContent + rawContent;
             document.getElementById('update-info').innerHTML = content;
         }
 
