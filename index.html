@@ -26,6 +26,8 @@
             --gauge-track: rgba(255, 255, 255, 0.1);
             --gauge-pointer: #ffffff;
             --gauge-shadow: rgba(255, 255, 255, 0.5);
+            --panel-bg: rgba(0, 0, 0, 0.3);
+            --track-bg: linear-gradient(90deg, #1e293b 0%, #334155 100%);
         }
 
         [data-theme="light"] {
@@ -48,6 +50,8 @@
             --gauge-track: rgba(0, 0, 0, 0.08);
             --gauge-pointer: var(--accent);
             --gauge-shadow: rgba(2, 132, 199, 0.3);
+            --panel-bg: rgba(0, 0, 0, 0.04);
+            --track-bg: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
         }
 
         body {
@@ -126,8 +130,8 @@
             max-height: 0;
             overflow: hidden;
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255,255,255,0.05);
+            background: var(--panel-bg);
+            border-top: 1px solid var(--border);
         }
 
         .row-item.expanded .detail-panel {
@@ -165,9 +169,9 @@
             position: absolute;
             top: 33px; left: 15px; right: 15px;
             height: 10px;
-            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            background: var(--track-bg);
             border-radius: 5px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             z-index: 1;
         }
         .path-bar-fill {
@@ -178,19 +182,22 @@
             transition: width 0.8s ease;
         }
 
-        /* 節點容器 - 等距排列 */
+        /* 節點容器 - 精準對齊進度條 15px 邊距 */
         .path-nodes {
-            display: flex; justify-content: space-between; position: relative;
+            display: flex; 
+            justify-content: space-between; 
+            position: relative;
+            padding: 0 15px;
         }
         .path-node-col {
-            display: flex; flex-direction: column; align-items: center;
-            flex: 1; /* 平分寬度 */
-            overflow: hidden; /* 防止文字溢出重疊 */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            width: 0;
+            flex: none;
+            overflow: visible;
             position: relative;
-            min-width: 0; /* flex item 防止撑開 */
         }
-        .path-node-col:first-child { align-items: flex-start; }
-        .path-node-col:last-child { align-items: flex-end; }
 
         /* 節點圓點 */
         .node-dot {
@@ -223,7 +230,7 @@
             font-size: 0.8rem; color: var(--text-dim); font-weight: 600;
             margin-bottom: 12px; /* space above bar */
             white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            overflow: visible; 
             z-index: 2;
         }
 
@@ -232,7 +239,7 @@
             font-size: 0.85rem; font-weight: 800; color: var(--text-title);
             margin-top: 12px; /* space below bar */
             white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            overflow: visible;
             z-index: 2;
         }
 
@@ -507,8 +514,69 @@
             .zone-badge { font-size: 0.6rem !important; padding: 2px 6px !important; }
             .node-dot { width: 16px !important; height: 16px !important; border-width: 2px !important; }
 
-            .favorites-zone { margin-bottom: 30px !important; border-radius: 20px !important; }
+            .favorites-zone { display: none !important; }
             .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
+        }
+
+        /* 手機版懸浮按鈕 */
+        .mobile-fav-btn {
+            display: none;
+            position: fixed;
+            bottom: 25px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            font-size: 1.5rem;
+            animation: pulse-fav 2s infinite;
+        }
+
+        @keyframes pulse-fav {
+            0% { transform: scale(1); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 35px rgba(56, 189, 248, 0.7); }
+            100% { transform: scale(1); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5); }
+        }
+
+        /* 收藏彈窗樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-content {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            max-height: 80vh;
+            background: var(--bg);
+            border-radius: 30px 30px 0 0;
+            border-top: 1px solid var(--border);
+            padding: 30px 20px;
+            z-index: 2001;
+            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active { display: block; opacity: 1; }
+        .modal-overlay.active + .modal-content { bottom: 0; }
+
+        @media (max-width: 600px) {
+            .mobile-fav-btn { display: flex; }
         }
 
         @keyframes fadeIn {
@@ -586,6 +654,13 @@
             <div class="right-col">
                 <div id="favorites-section" class="favorites-zone"></div>
             </div>
+        </div>
+
+        <!-- 手機版收藏按鈕與彈窗 -->
+        <button class="mobile-fav-btn" onclick="toggleModal(true)">⭐</button>
+        <div class="modal-overlay" id="modal-overlay" onclick="toggleModal(false)"></div>
+        <div class="modal-content" id="modal-content">
+            <div id="mobile-fav-list"></div>
         </div>
     </div>
 
@@ -728,12 +803,11 @@
         function render() {
             const board = document.getElementById('leaderboard');
             const favSection = document.getElementById('favorites-section');
+            const mobileFavSection = document.getElementById('mobile-fav-list');
             
-            // 渲染收藏專區
-            if (favorites.length === 0) {
-                favSection.innerHTML = '<div class="fav-empty">尚未收藏任何股票，點擊下方排行榜的星號即可加入。</div>';
-            } else {
-                favSection.innerHTML = `
+            const favHtml = favorites.length === 0 
+                ? '<div class="fav-empty">尚未收藏任何股票，點擊下方排行榜的星號即可加入。</div>'
+                : `
                     <div class="fav-header">
                         <h2>⭐ 收藏專區</h2>
                         <span class="count">${favorites.length}</span>
@@ -750,7 +824,9 @@
                         `).join('')}
                     </div>
                 `;
-            }
+            
+            favSection.innerHTML = favHtml;
+            mobileFavSection.innerHTML = favHtml;
 
             if (!allData || allData.length === 0) return;
 
@@ -775,8 +851,8 @@
                 const ratio = price / cost;
                 
                 const nodes = [
-                    { label: '成本',   mul: 1.00, zone: 'safe',    zoneName: '安全區', icon: '◇' },
-                    { label: '發動區', mul: 1.04, zone: 'build',   zoneName: '建倉區', icon: '↗' },
+                    { label: '發動區', mul: 1.00, zone: 'build',   zoneName: '建倉區', icon: '↗' },
+                    { label: '成本',   mul: 1.04, zone: 'safe',    zoneName: '安全區', icon: '◇' },
                     { label: '第一關', mul: 1.20, zone: 'warn',    zoneName: '警戒區', icon: '⚠' },
                     { label: '第二關', mul: 1.40, zone: 'danger',  zoneName: '高危區', icon: '🔥' },
                     { label: '最後目標', mul: 1.70, zone: 'extreme', zoneName: '極限區', icon: '🎯' }
@@ -866,6 +942,14 @@
                     el.classList.remove('expanded');
                 }
             });
+        }
+        function toggleModal(show) {
+            const overlay = document.getElementById('modal-overlay');
+            if (show) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
         }
     </script>
 </body>
