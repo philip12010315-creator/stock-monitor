@@ -271,6 +271,7 @@
         .status-marquee-content {
             display: inline-block;
             animation: marquee-scroll 15s linear infinite;
+            will-change: transform;
         }
         .status-item {
             display: inline-block;
@@ -550,14 +551,17 @@
             .favorites-zone { display: none !important; }
             .fav-card { flex: 1 1 calc(50% - 5px) !important; font-size: 0.85rem !important; }
 
-            /* 手機版跑馬燈滿版化 */
+            /* 手機版跑馬燈滿版化與獨立加速 */
             .status-marquee-container {
-                width: 100vw !important;
+                width: calc(100% + 30px) !important;
                 margin-left: -15px !important;
                 border-radius: 0 !important;
                 border-left: none !important;
                 border-right: none !important;
                 background: rgba(56, 189, 248, 0.1) !important;
+            }
+            .status-marquee-content {
+                animation-duration: 8s !important;
             }
         }
 
