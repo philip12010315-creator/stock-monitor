@@ -270,8 +270,10 @@
         }
         .status-marquee-content {
             display: inline-block;
-            animation: marquee-scroll 18s linear infinite;
             will-change: transform;
+        }
+        .status-marquee-content.running {
+            animation: marquee-scroll 18s linear infinite;
         }
         .status-item {
             display: inline-block;
@@ -560,7 +562,7 @@
                 border-right: none !important;
                 background: rgba(56, 189, 248, 0.1) !important;
             }
-            .status-marquee-content {
+            .status-marquee-content.running {
                 animation-duration: 12s !important;
             }
         }
@@ -843,7 +845,14 @@
             // 三十倍內容重複，確保在手機小螢幕上也能實現絕對無縫循環
             const rawContent = items.join('');
             const content = rawContent.repeat(30);
-            document.getElementById('update-info').innerHTML = content;
+            
+            const infoEl = document.getElementById('update-info');
+            infoEl.classList.remove('running'); // 先移除動畫
+            infoEl.innerHTML = content;
+            
+            // 強制瀏覽器重繪 (Reflow)，確保動畫重新從 0% 開始計算
+            void infoEl.offsetWidth; 
+            infoEl.classList.add('running');
         }
 
         document.getElementById('search-input').addEventListener('input', (e) => {
