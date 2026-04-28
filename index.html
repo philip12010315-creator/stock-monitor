@@ -676,6 +676,38 @@
             color: #fff;
         }
 
+        /* 登出按鈕樣式 */
+        .logout-header-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(10px);
+        }
+        .logout-header-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .logout-header-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+
         /* 雲端同步按鈕與狀態 */
         .sync-status-btn {
             background: transparent;
@@ -883,6 +915,9 @@
                     <button class="theme-btn" data-theme-val="light" title="淺色模式">☀️</button>
                     <button class="theme-btn" data-theme-val="auto" title="自動偵測">🌗</button>
                 </div>
+                <button class="logout-header-btn" onclick="logout()" title="登出並切換帳號">
+                    🚪 登出
+                </button>
             </div>
         </header>
 
@@ -1362,28 +1397,32 @@
             const favSection = document.getElementById('favorites-section');
             const mobileFavSection = document.getElementById('mobile-fav-list');
             
-            const favHtml = favorites.length === 0 
-                ? '<div class="fav-empty">尚未收藏任何股票，點擊下方排行榜的星號即可加入。</div>'
-                : `
+            const favHtml = `
                     <div class="fav-header">
                         <h2>⭐ 收藏專區</h2>
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
                             <button id="cloud-sync-btn" class="sync-status-btn" onclick="toggleSyncModal(true)">
                                 <span>☁️</span> <span id="sync-status-text">未同步</span>
+                            </button>
+                            <button class="sync-status-btn" onclick="logout()" style="color: var(--danger); border-color: rgba(239,68,68,0.2);">
+                                🚪 登出
                             </button>
                             <span class="count">${favorites.length}</span>
                         </div>
                     </div>
                     <div class="fav-list">
-                        ${favorites.map(f => `
-                            <div class="fav-card">
-                                <div class="info">
-                                    <span class="name">${f.name}</span>
-                                    <span class="code">${f.code}</span>
+                        ${favorites.length === 0 
+                            ? '<div class="fav-empty">尚未收藏任何股票，點擊排行榜星號加入。</div>'
+                            : favorites.map(f => `
+                                <div class="fav-card">
+                                    <div class="info">
+                                        <span class="name">${f.name}</span>
+                                        <span class="code">${f.code}</span>
+                                    </div>
+                                    <div class="fav-remove" onclick="togglePin(event, '${f.name}', '${f.code}')">✕</div>
                                 </div>
-                                <div class="fav-remove" onclick="togglePin(event, '${f.name}', '${f.code}')">✕</div>
-                            </div>
-                        `).join('')}
+                            `).join('')
+                        }
                     </div>
                 `;
             
