@@ -1051,11 +1051,12 @@
                                     ${isApproved ? '已核准' : '待審核'}
                                 </span>
                             </div>
-                            <div>
+                            <div style="display: flex; gap: 8px;">
                                 ${isApproved 
                                     ? `<button class="admin-btn btn-revoke" onclick="updateUserStatus('${id}', 'pending')">封鎖</button>`
                                     : `<button class="admin-btn btn-approve" onclick="updateUserStatus('${id}', 'approved')">核准</button>`
                                 }
+                                <button class="admin-btn" style="background: #4b5563; color: #fff;" onclick="deleteUser('${id}')">刪除</button>
                             </div>
                         </div>
                     `;
@@ -1073,6 +1074,16 @@
                 alert(`已將 ${userId} 設定為 ${status === 'approved' ? '核准' : '封鎖'}`);
             } catch (e) {
                 alert('更新失敗');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm(`確定要永久刪除使用者 ${userId} 嗎？`)) return;
+            try {
+                await db.collection('users').doc(userId).delete();
+                refreshAdminList();
+            } catch (e) {
+                alert('刪除失敗');
             }
         }
 
