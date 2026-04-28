@@ -758,16 +758,56 @@
             font-size: 3rem; margin-bottom: 20px; display: block;
         }
         
-        /* 管理員後台樣式 */
+        /* 管理員標籤與通知紅點 */
+        #admin-tag {
+            cursor: pointer;
+            position: relative;
+            display: none;
+            font-size: 0.75rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 50px;
+            vertical-align: middle;
+            margin-left: 10px;
+            font-weight: 800;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        #admin-tag:hover { transform: scale(1.05); filter: brightness(1.1); }
+        #admin-tag .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.65rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: none; /* 沒人時隱藏 */
+        }
+
         .admin-zone {
-            background: rgba(30, 41, 59, 0.9);
-            border: 2px solid var(--accent);
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid var(--accent);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 30px;
-            display: none; /* 預設隱藏 */
+            display: none; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body.is-admin .admin-zone { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        body.is-admin .admin-zone.active { display: block; }
         
         .admin-user-card {
             display: flex; justify-content: space-between; align-items: center;
@@ -826,7 +866,7 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>成本推演模型 <span id="admin-tag" style="display:none; font-size: 0.8rem; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 5px; vertical-align: middle; margin-left: 10px;">ADMIN</span></h1>
+                <h1>成本推演模型 <span id="admin-tag" onclick="toggleAdminPanel()">ADMIN <div class="badge" id="admin-badge">0</div></span></h1>
                 <div class="status-marquee-container">
                     <div id="update-info" class="status-marquee-content">同步中...</div>
                 </div>
@@ -1029,20 +1069,31 @@
         }
 
         // 管理員後台邏輯
+        function toggleAdminPanel() {
+            if (!isAdmin) return;
+            const panel = document.getElementById('admin-panel');
+            panel.classList.toggle('active');
+        }
+
         async function refreshAdminList() {
             if (!isAdmin) return;
             const listEl = document.getElementById('admin-user-list');
+            const badge = document.getElementById('admin-badge');
             listEl.innerHTML = '正在讀取...';
             
             try {
                 const snapshot = await db.collection('users').get();
                 let html = '';
+                let pendingCount = 0;
+
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const id = doc.id;
                     if (id === ADMIN_ID) return;
                     
                     const isApproved = data.status === 'approved';
+                    if (!isApproved) pendingCount++;
+
                     html += `
                         <div class="admin-user-card">
                             <div class="admin-user-info">
@@ -1062,6 +1113,14 @@
                     `;
                 });
                 listEl.innerHTML = html || '目前尚無其他使用者。';
+                
+                // 更新紅點
+                if (pendingCount > 0) {
+                    badge.innerText = pendingCount;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
             } catch (e) {
                 listEl.innerHTML = '讀取失敗。';
             }
