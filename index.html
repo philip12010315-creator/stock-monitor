@@ -604,9 +604,8 @@
         .mobile-fav-btn { bottom: 25px; }
         .mobile-settings-btn { 
             bottom: 95px; 
-            background: var(--node-bg); 
-            border: 1px solid var(--border);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            background: var(--accent); 
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
         }
         
         @media (max-width: 600px) {
@@ -958,8 +957,8 @@
         </div>
 
         <!-- 手機版收藏與設定按鈕 -->
-        <button class="mobile-fav-btn" onclick="toggleModal(true)" title="開啟收藏">⭐</button>
-        <button class="mobile-settings-btn" onclick="toggleModal(true)" title="開啟設定">⚙️</button>
+        <button class="mobile-fav-btn" onclick="toggleModal(true, 'fav')" title="開啟收藏">⭐</button>
+        <button class="mobile-settings-btn" onclick="toggleModal(true, 'settings')" title="開啟設定">⚙️</button>
         
         <div class="modal-overlay" id="modal-overlay" onclick="toggleModal(false)"></div>
         <div class="modal-content" id="modal-content">
@@ -1000,6 +999,7 @@
         let syncId = null; // 取消從 localStorage 讀取，每次都要手動輸入
 
         let ws;
+        let activeMobileTab = 'fav'; // 手機版當前顯示分頁: 'fav' 或 'settings'
         const ADMIN_ID = 'philipno1';
         const ADMIN_PASS = 'philipno1';
         let isAdmin = false;
@@ -1474,7 +1474,7 @@
             const favSection = document.getElementById('favorites-section');
             const mobileFavSection = document.getElementById('mobile-fav-list');
             
-            const favHtml = `
+            const settingsHtml = `
                     <!-- 設定區塊 -->
                     <div class="fav-header">
                         <h2>⚙️ 系統設定</h2>
@@ -1500,7 +1500,9 @@
                             </div>
                         </div>
                     </div>
+            `;
 
+            const favoritesHtml = `
                     <!-- 收藏區塊 -->
                     <div class="fav-header">
                         <h2>⭐ 我的收藏</h2>
@@ -1520,10 +1522,13 @@
                             `).join('')
                         }
                     </div>
-                `;
+            `;
             
-            favSection.innerHTML = favHtml;
-            mobileFavSection.innerHTML = favHtml;
+            // 電腦版永遠顯示兩者
+            favSection.innerHTML = settingsHtml + favoritesHtml;
+            // 手機版根據當前選中的 tab 顯示
+            mobileFavSection.innerHTML = (activeMobileTab === 'settings') ? settingsHtml : favoritesHtml;
+            
             updateSyncUI(!!syncId);
 
             if (!allData || allData.length === 0) return;
@@ -1641,12 +1646,14 @@
                 }
             });
         }
-        function toggleModal(show) {
+        function toggleModal(show, tab = 'fav') {
             const overlay = document.getElementById('modal-overlay');
             const content = document.getElementById('modal-content');
             if (show) {
+                activeMobileTab = tab; // 設定當前要顯示的分頁
+                render(); // 重新渲染內容
                 overlay.classList.add('active');
-                if (content) content.scrollTop = 0; // 開啟時自動回到頂部看到設定
+                if (content) content.scrollTop = 0;
             } else {
                 overlay.classList.remove('active');
             }
