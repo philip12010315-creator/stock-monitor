@@ -1289,17 +1289,24 @@
         }
 
         function updateSyncUI(active) {
-            const btn = document.getElementById('cloud-sync-btn');
-            const text = document.getElementById('sync-status-text');
-            if (!btn || !text) return;
+            const btns = document.querySelectorAll('.cloud-sync-btn');
+            const texts = document.querySelectorAll('.sync-status-text');
             
             if (syncId) {
-                btn.classList.add('active');
-                text.innerText = active ? `帳號: ${syncId}` : `同步失敗 (${syncId})`;
-                btn.onclick = () => logout(); // 改為點擊可登出
+                btns.forEach(btn => {
+                    btn.classList.add('active');
+                    btn.onclick = () => logout(); // 改為點擊可登出
+                });
+                texts.forEach(text => {
+                    text.innerText = active ? `帳號: ${syncId}` : `同步失敗 (${syncId})`;
+                });
             } else {
-                btn.classList.remove('active');
-                text.innerText = '未登入';
+                btns.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                texts.forEach(text => {
+                    text.innerText = '未登入';
+                });
             }
         }
 
@@ -1461,8 +1468,8 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
                             <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600;">登入帳號</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <button id="cloud-sync-btn" class="sync-status-btn" onclick="toggleSyncModal(true)" style="padding: 4px 10px;">
-                                    <span>☁️</span> <span id="sync-status-text">未同步</span>
+                                <button class="sync-status-btn cloud-sync-btn" onclick="toggleSyncModal(true)" style="padding: 4px 10px;">
+                                    <span>☁️</span> <span class="sync-status-text">未同步</span>
                                 </button>
                             </div>
                         </div>
