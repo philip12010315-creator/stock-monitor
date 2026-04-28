@@ -346,7 +346,7 @@
 
         /* 收藏專區樣式 (側邊欄版) */
         .favorites-zone {
-            background: rgba(17, 24, 39, 0.4);
+            background: var(--row-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 20px;
@@ -379,7 +379,7 @@
         .fav-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
         .fav-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--card-inner);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 12px 15px;
@@ -736,11 +736,11 @@
         }
         .sync-input-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
         .sync-input-group input {
-            background: rgba(255,255,255,0.05);
+            background: var(--card-inner);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 12px;
-            color: #fff;
+            color: var(--text-title);
             font-size: 1rem;
             outline: none;
         }
@@ -779,7 +779,7 @@
             transform: scale(1.1);
         }
         .login-card {
-            background: rgba(17, 24, 39, 0.8);
+            background: var(--row-bg);
             border: 1px solid var(--border);
             border-radius: 30px;
             padding: 40px;
@@ -828,7 +828,7 @@
         }
 
         .admin-zone {
-            background: rgba(30, 41, 59, 0.95);
+            background: var(--row-bg);
             border: 1px solid var(--accent);
             border-radius: 20px;
             padding: 20px;
@@ -845,7 +845,7 @@
         
         .admin-user-card {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255,255,255,0.05);
+            background: var(--card-inner);
             padding: 10px 15px; border-radius: 12px; margin-bottom: 8px;
             border: 1px solid var(--border);
         }
@@ -1412,7 +1412,7 @@
                     </div>
                     
                     <!-- 整合設定區塊 (僅在視窗內顯示) -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid var(--border);">
+                    <div style="margin-bottom: 20px; padding: 15px; background: var(--card-inner); border-radius: 15px; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600;">外觀主題</span>
                             <div class="theme-toggle-group" style="display: flex !important; margin: 0;">
