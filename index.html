@@ -1437,19 +1437,25 @@
             const favHtml = `
                     <div class="fav-header">
                         <h2>⭐ 收藏與設定</h2>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <button id="cloud-sync-btn" class="sync-status-btn" onclick="toggleSyncModal(true)">
-                                <span>☁️</span> <span id="sync-status-text">未同步</span>
-                            </button>
-                            <button class="sync-status-btn" onclick="logout()" style="color: var(--danger); border-color: rgba(239,68,68,0.2);">
-                                🚪 登出
-                            </button>
-                            <span class="count">${favorites.length}</span>
-                        </div>
+                        <span class="count">${favorites.length}</span>
                     </div>
                     
                     <!-- 整合設定區塊 (僅在視窗內顯示) -->
                     <div style="margin-bottom: 20px; padding: 15px; background: var(--card-inner); border-radius: 15px; border: 1px solid var(--border);">
+                        <!-- 帳號與同步狀態 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                            <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600;">登入帳號</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button id="cloud-sync-btn" class="sync-status-btn" onclick="toggleSyncModal(true)" style="padding: 4px 10px;">
+                                    <span>☁️</span> <span id="sync-status-text">未同步</span>
+                                </button>
+                                <button class="sync-status-btn" onclick="logout()" style="padding: 4px 10px; color: var(--danger); border-color: rgba(239,68,68,0.2);">
+                                    🚪 登出
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 主題切換 -->
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600;">外觀主題</span>
                             <div class="theme-toggle-group" style="display: flex !important; margin: 0;">
