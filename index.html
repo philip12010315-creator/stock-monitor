@@ -1463,15 +1463,13 @@
             const mobileFavSection = document.getElementById('mobile-fav-list');
             
             const favHtml = `
+                    <!-- 設定區塊 -->
                     <div class="fav-header">
-                        <h2>⭐ 收藏與設定</h2>
-                        <span class="count">${favorites.length}</span>
+                        <h2>⚙️ 系統設定</h2>
                     </div>
-                    
-                    <!-- 整合設定區塊 (僅在視窗內顯示) -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: var(--card-inner); border-radius: 15px; border: 1px solid var(--border);">
+                    <div style="margin-bottom: 25px; padding: 15px; background: var(--card-inner); border-radius: 15px; border: 1px solid var(--border);">
                         <!-- 帳號與同步狀態 -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
                             <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 600;">登入帳號</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <button class="sync-status-btn cloud-sync-btn" onclick="toggleSyncModal(true)" style="padding: 4px 10px;">
@@ -1491,6 +1489,11 @@
                         </div>
                     </div>
 
+                    <!-- 收藏區塊 -->
+                    <div class="fav-header">
+                        <h2>⭐ 我的收藏</h2>
+                        <span class="count">${favorites.length}</span>
+                    </div>
                     <div class="fav-list">
                         ${favorites.length === 0 
                             ? '<div class="fav-empty">尚未收藏任何股票，點擊排行榜星號加入。</div>'
