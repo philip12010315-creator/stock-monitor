@@ -1022,7 +1022,7 @@
                 // 自動登入
                 document.getElementById('login-id-input').value = savedId;
                 document.getElementById('login-pass-input').value = savedPass;
-                handleLogin();
+                handleLogin(true);
             } else {
                 // 安全起見：如果沒紀錄密碼，徹底清空電腦上的暫存 ID 與收藏
                 localStorage.removeItem('stock_sync_id');
@@ -1108,7 +1108,7 @@
 
         // checkAdminId 已移除，因為現在所有人都需要密碼
 
-        async function handleLogin() {
+        async function handleLogin(isAutoLogin = false) {
             const input = document.getElementById('login-id-input').value.trim().toLowerCase();
             const password = document.getElementById('login-pass-input').value.trim();
             const msg = document.getElementById('login-msg');
@@ -1119,7 +1119,14 @@
                 return;
             }
             
-            msg.innerText = '⏳ 處理中...';
+            if (isAutoLogin) {
+                // 自動登入時，隱藏多餘的輸入框，讓畫面更乾淨並明確提示
+                document.querySelectorAll('.sync-input-group, .sync-btn-primary, .sync-desc, .login-card p').forEach(el => el.style.display = 'none');
+                msg.style.fontSize = '1.1rem';
+                msg.innerText = `✨ 歡迎回來！\n正在自動登入 [ ${input} ]...`;
+            } else {
+                msg.innerText = '⏳ 處理中...';
+            }
             msg.style.color = 'var(--accent)';
             
             const result = await connectCloud(input, password);
@@ -1128,7 +1135,7 @@
                 localStorage.setItem('stock_login_id', input);
                 localStorage.setItem('stock_login_pass', password);
 
-                msg.innerText = '✅ 登入成功！';
+                msg.innerText = `✅ 登入成功！\n歡迎，${input}`;
                 msg.style.color = 'var(--success)';
                 setTimeout(() => {
                     document.getElementById('login-wall').classList.add('hidden');
@@ -1141,6 +1148,14 @@
                     render();
                 }, 800);
             } else {
+                if (isAutoLogin) {
+                    // 自動登入失敗 (密碼被改或被封鎖)，清除本地記錄並恢復 UI
+                    localStorage.removeItem('stock_login_id');
+                    localStorage.removeItem('stock_login_pass');
+                    alert('自動登入失敗：' + result.msg + '\n請重新手動登入。');
+                    location.reload();
+                    return;
+                }
                 msg.innerText = result.msg || '❌ 登入失敗';
                 msg.style.color = 'var(--danger)';
             }
