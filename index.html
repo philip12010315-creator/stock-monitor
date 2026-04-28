@@ -673,13 +673,160 @@
             color: #fff;
         }
 
+        /* 雲端同步按鈕與狀態 */
+        .sync-status-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        .sync-status-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .sync-status-btn.active { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05); }
+
+        .sync-modal-content {
+            text-align: center;
+        }
+        .sync-input-group {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+        .sync-input-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
+        .sync-input-group input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+        .sync-input-group input:focus { border-color: var(--accent); }
+        .sync-btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .sync-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
+        
+        .sync-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; margin-top: 15px; }
+
+        /* 全螢幕登入牆 */
+        #login-wall {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15) 0%, transparent 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            transition: all 0.5s ease;
+        }
+        #login-wall.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+        .login-card {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .login-logo {
+            font-size: 3rem; margin-bottom: 20px; display: block;
+        }
+        
+        /* 管理員後台樣式 */
+        .admin-zone {
+            background: rgba(30, 41, 59, 0.9);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none; /* 預設隱藏 */
+        }
+        body.is-admin .admin-zone { display: block; }
+        
+        .admin-user-card {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 15px; border-radius: 12px; margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+        .admin-user-info { text-align: left; }
+        .admin-user-id { font-weight: bold; color: var(--text-title); }
+        .admin-user-status { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+        .status-pending { background: var(--warning); color: #000; }
+        .status-approved { background: var(--success); color: #fff; }
+        
+        .admin-btn {
+            border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.8rem;
+        }
+        .btn-approve { background: var(--success); color: #fff; }
+        .btn-revoke { background: var(--danger); color: #fff; }
+
+        /* 隱藏主內容直到登入 */
+        .container { filter: blur(10px); transition: filter 0.5s; display: none; }
+        body.logged-in .container { filter: none; display: block; }
     </style>
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+    <!-- 登入牆 -->
+    <div id="login-wall">
+        <div class="login-card">
+            <span class="login-logo">📈</span>
+            <h1 style="margin: 0 0 10px 0; font-size: 1.8rem; color: var(--text-title);">成本推演系統</h1>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">請輸入您的同步 ID 以開啟儀表板</p>
+            
+            <div class="sync-input-group" style="text-align: left;">
+                <label>同步 ID (Account ID)</label>
+                <input type="text" id="login-id-input" placeholder="例如: philip888" style="width: 100%;" oninput="checkAdminId()">
+            </div>
+
+            <!-- 管理員密碼框 (預設隱藏) -->
+            <div id="admin-pass-group" class="sync-input-group" style="text-align: left; display: none;">
+                <label>管理員密碼 (Admin Password)</label>
+                <input type="password" id="login-pass-input" placeholder="請輸入密碼" style="width: 100%;">
+            </div>
+            
+            <button class="sync-btn-primary" onclick="handleLogin()">進入系統</button>
+            <div id="login-msg" style="margin-top: 15px; font-size: 0.85rem; min-height: 1.2rem;"></div>
+            
+            <p class="sync-desc" style="font-size: 0.7rem; opacity: 0.6;">
+                如果您是新使用者，輸入新 ID 即可自動建立空間。
+            </p>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>成本推演模型</h1>
+                <h1>成本推演模型 <span id="admin-tag" style="display:none; font-size: 0.8rem; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 5px; vertical-align: middle; margin-left: 10px;">ADMIN</span></h1>
                 <div class="status-marquee-container">
                     <div id="update-info" class="status-marquee-content">同步中...</div>
                 </div>
@@ -695,6 +842,15 @@
                 </div>
             </div>
         </header>
+
+        <!-- 管理員後台 (僅管理員可見) -->
+        <div id="admin-panel" class="admin-zone">
+            <h2 style="margin: 0 0 15px 0; color: var(--accent); font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                🛡️ 使用者審核後台
+                <button onclick="refreshAdminList()" style="background: transparent; border: 1px solid var(--border); color: #fff; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">刷新名單</button>
+            </h2>
+            <div id="admin-user-list">正在讀取使用者清單...</div>
+        </div>
 
         <div class="main-layout">
             <div class="left-col">
@@ -714,10 +870,45 @@
         <div class="modal-content" id="modal-content">
             <div id="mobile-fav-list"></div>
         </div>
+
+        <!-- 雲端同步彈窗 -->
+        <div class="modal-overlay" id="sync-modal-overlay" onclick="toggleSyncModal(false)"></div>
+        <div class="modal-content" id="sync-modal-content">
+            <div class="sync-modal-content">
+                <h2 style="margin: 0; color: var(--text-title);">☁️ 雲端同步設定</h2>
+                <p class="sync-desc">輸入同步 ID，即可在多台裝置間同步您的收藏清單。</p>
+                <div class="sync-input-group">
+                    <div>
+                        <label>同步 ID (建議使用暱稱+數字)</label>
+                        <input type="text" id="sync-id-input" placeholder="例如: philip888" autocomplete="off">
+                    </div>
+                </div>
+                <button class="sync-btn-primary" onclick="connectCloud()">開始同步</button>
+                <div id="sync-msg" style="margin-top: 15px; font-size: 0.85rem; min-height: 1.2rem;"></div>
+                <p class="sync-desc" style="font-size: 0.75rem;">註：資料將加密儲存於 Google Firebase 雲端。</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Firebase 初始化
+        const firebaseConfig = {
+          apiKey: "AIzaSyCx_xSoHFxIFvzaRlCWD7X-orfugXIFlNw",
+          authDomain: "stock-monitor-ed895.firebaseapp.com",
+          projectId: "stock-monitor-ed895",
+          storageBucket: "stock-monitor-ed895.firebasestorage.app",
+          messagingSenderId: "147103322361",
+          appId: "1:147103322361:web:1eaf100ae34d7e40cf1228"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let syncId = localStorage.getItem('stock_sync_id') || null;
+
         let ws;
+        const ADMIN_ID = 'philipno1';
+        const ADMIN_PASS = 'philipno1';
+        let isAdmin = false;
+        
         try {
             // 只有在本地環境 (http) 才會嘗試建立 WebSocket 連線
             if (window.location.protocol === 'http:') {
@@ -741,6 +932,195 @@
         let fileDate = ''; // 新增：存放資料日期
         let searchQuery = '';
         let favorites = JSON.parse(localStorage.getItem('stock_favorites') || '[]');
+
+        // 雲端同步邏輯
+        async function connectCloud(input, password = '') {
+            const msg = document.getElementById('login-msg');
+            
+            // 1. 管理員登入檢查
+            if (input === ADMIN_ID) {
+                if (password === ADMIN_PASS) {
+                    isAdmin = true;
+                    syncId = ADMIN_ID;
+                    localStorage.setItem('stock_sync_id', syncId);
+                    return { success: true, type: 'admin' };
+                } else {
+                    return { success: false, msg: '❌ 管理員密碼錯誤' };
+                }
+            }
+
+            try {
+                const docRef = db.collection('users').doc(input);
+                const docSnap = await docRef.get();
+                
+                if (docSnap.exists) {
+                    const userData = docSnap.data();
+                    if (userData.status === 'approved' || userData.status === undefined) {
+                        const cloudFavs = userData.favorites || [];
+                        const combined = [...cloudFavs];
+                        favorites.forEach(lf => {
+                            if (!combined.some(cf => cf.code === lf.code)) combined.push(lf);
+                        });
+                        favorites = combined;
+                        localStorage.setItem('stock_favorites', JSON.stringify(favorites));
+                        syncId = input;
+                        localStorage.setItem('stock_sync_id', syncId);
+                        return { success: true, type: 'user' };
+                    } else {
+                        return { success: false, msg: '⏳ 帳號審核中，請聯絡 Philip 核准' };
+                    }
+                } else {
+                    // 新使用者註冊
+                    await docRef.set({ 
+                        favorites: favorites, 
+                        status: 'pending', 
+                        requestTime: new Date() 
+                    });
+                    return { success: false, msg: '📩 已送出申請，請等候 Philip 核准後再試' };
+                }
+            } catch (e) {
+                console.error(e);
+                return { success: false, msg: '❌ 連線出錯，請稍後再試' };
+            }
+        }
+
+        function checkAdminId() {
+            const input = document.getElementById('login-id-input').value.trim().toLowerCase();
+            const passGroup = document.getElementById('admin-pass-group');
+            if (input === ADMIN_ID) {
+                passGroup.style.display = 'block';
+            } else {
+                passGroup.style.display = 'none';
+            }
+        }
+
+        async function handleLogin() {
+            const input = document.getElementById('login-id-input').value.trim().toLowerCase();
+            const password = document.getElementById('login-pass-input').value.trim();
+            const msg = document.getElementById('login-msg');
+            
+            if (!input) {
+                msg.innerText = '❌ 請輸入 ID';
+                msg.style.color = 'var(--danger)';
+                return;
+            }
+            
+            msg.innerText = '⏳ 處理中...';
+            msg.style.color = 'var(--accent)';
+            
+            const result = await connectCloud(input, password);
+            if (result.success) {
+                msg.innerText = '✅ 登入成功！';
+                msg.style.color = 'var(--success)';
+                setTimeout(() => {
+                    document.getElementById('login-wall').classList.add('hidden');
+                    document.body.classList.add('logged-in');
+                    if (isAdmin) {
+                        document.body.classList.add('is-admin');
+                        document.getElementById('admin-tag').style.display = 'inline-block';
+                        refreshAdminList();
+                    }
+                    render();
+                }, 800);
+            } else {
+                msg.innerText = result.msg || '❌ 登入失敗';
+                msg.style.color = 'var(--danger)';
+            }
+        }
+
+        // 管理員後台邏輯
+        async function refreshAdminList() {
+            if (!isAdmin) return;
+            const listEl = document.getElementById('admin-user-list');
+            listEl.innerHTML = '正在讀取...';
+            
+            try {
+                const snapshot = await db.collection('users').get();
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    if (id === ADMIN_ID) return;
+                    
+                    const isApproved = data.status === 'approved';
+                    html += `
+                        <div class="admin-user-card">
+                            <div class="admin-user-info">
+                                <span class="admin-user-id">${id}</span>
+                                <span class="admin-user-status ${isApproved ? 'status-approved' : 'status-pending'}">
+                                    ${isApproved ? '已核准' : '待審核'}
+                                </span>
+                            </div>
+                            <div>
+                                ${isApproved 
+                                    ? `<button class="admin-btn btn-revoke" onclick="updateUserStatus('${id}', 'pending')">封鎖</button>`
+                                    : `<button class="admin-btn btn-approve" onclick="updateUserStatus('${id}', 'approved')">核准</button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html || '目前尚無其他使用者。';
+            } catch (e) {
+                listEl.innerHTML = '讀取失敗。';
+            }
+        }
+
+        async function updateUserStatus(userId, status) {
+            try {
+                await db.collection('users').doc(userId).update({ status: status });
+                refreshAdminList();
+                alert(`已將 ${userId} 設定為 ${status === 'approved' ? '核准' : '封鎖'}`);
+            } catch (e) {
+                alert('更新失敗');
+            }
+        }
+
+        function logout() {
+            if (!confirm('確定要登出並切換帳號嗎？')) return;
+            localStorage.removeItem('stock_sync_id');
+            location.reload(); // 重新整理頁面回到登入牆
+        }
+
+        async function syncToCloud() {
+            if (!syncId) return;
+            try {
+                await db.collection('users').doc(syncId).set({
+                    favorites: favorites,
+                    lastUpdate: new Date()
+                }, { merge: true });
+                updateSyncUI(true);
+            } catch (e) {
+                console.error('雲端同步失敗:', e);
+                updateSyncUI(false);
+            }
+        }
+
+        function toggleSyncModal(show) {
+            const overlay = document.getElementById('sync-modal-overlay');
+            const content = document.getElementById('sync-modal-content');
+            if (show) {
+                overlay.classList.add('active');
+                if (syncId) document.getElementById('sync-id-input').value = syncId;
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        function updateSyncUI(active) {
+            const btn = document.getElementById('cloud-sync-btn');
+            const text = document.getElementById('sync-status-text');
+            if (!btn || !text) return;
+            
+            if (syncId) {
+                btn.classList.add('active');
+                text.innerText = active ? `帳號: ${syncId}` : `同步失敗 (${syncId})`;
+                btn.onclick = () => logout(); // 改為點擊可登出
+            } else {
+                btn.classList.remove('active');
+                text.innerText = '未登入';
+            }
+        }
 
         // 主題控制邏輯
         const savedTheme = localStorage.getItem('app-theme') || 'dark';
@@ -866,7 +1246,7 @@
             render();
         });
 
-        function togglePin(e, name, code) {
+        async function togglePin(e, name, code) {
             e.stopPropagation();
             const index = favorites.findIndex(f => f.code === code);
             if (index > -1) {
@@ -876,6 +1256,11 @@
             }
             localStorage.setItem('stock_favorites', JSON.stringify(favorites));
             render();
+            
+            // 如果已開啟同步，自動備份到雲端
+            if (syncId) {
+                await syncToCloud();
+            }
         }
 
         function render() {
@@ -888,7 +1273,12 @@
                 : `
                     <div class="fav-header">
                         <h2>⭐ 收藏專區</h2>
-                        <span class="count">${favorites.length}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button id="cloud-sync-btn" class="sync-status-btn" onclick="toggleSyncModal(true)">
+                                <span>☁️</span> <span id="sync-status-text">未同步</span>
+                            </button>
+                            <span class="count">${favorites.length}</span>
+                        </div>
                     </div>
                     <div class="fav-list">
                         ${favorites.map(f => `
@@ -905,6 +1295,7 @@
             
             favSection.innerHTML = favHtml;
             mobileFavSection.innerHTML = favHtml;
+            updateSyncUI(!!syncId);
 
             if (!allData || allData.length === 0) return;
 
