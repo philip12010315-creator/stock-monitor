@@ -1010,9 +1010,20 @@
                         render();
                     }
                 };
+            } else {
+                // 雲端環境 (https)，改用靜態資料模式讀取 data.json
+                fetch('data.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        allData = data.stocks || [];
+                        fileDate = data.date || '';
+                        updateStatusInfo();
+                        render();
+                    })
+                    .catch(err => console.error('無法讀取靜態資料 data.json:', err));
             }
         } catch (e) {
-            console.error('WebSocket 連線失敗，改用靜態資料模式');
+            console.error('資料初始化失敗:', e);
         }
 
         let expandedId = null;
