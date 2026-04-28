@@ -583,24 +583,34 @@
         }
 
         /* 手機版懸浮按鈕 */
-        .mobile-fav-btn {
+        .mobile-fav-btn, .mobile-settings-btn {
             display: none;
             position: fixed;
-            bottom: 25px;
             right: 20px;
             width: 56px;
             height: 56px;
             background: var(--accent);
             color: #fff;
             border-radius: 50%;
-            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            border: none;
             font-size: 1.5rem;
-            animation: pulse-fav 2s infinite;
+            border: none;
+            transition: all 0.3s;
+        }
+        .mobile-fav-btn { bottom: 25px; }
+        .mobile-settings-btn { 
+            bottom: 95px; 
+            background: var(--node-bg); 
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 600px) {
+            .mobile-fav-btn, .mobile-settings-btn { display: flex; }
         }
 
         @keyframes pulse-fav {
@@ -947,8 +957,10 @@
             </div>
         </div>
 
-        <!-- 手機版收藏按鈕與彈窗 -->
-        <button class="mobile-fav-btn" onclick="toggleModal(true)">⭐</button>
+        <!-- 手機版收藏與設定按鈕 -->
+        <button class="mobile-fav-btn" onclick="toggleModal(true)" title="開啟收藏">⭐</button>
+        <button class="mobile-settings-btn" onclick="toggleModal(true)" title="開啟設定">⚙️</button>
+        
         <div class="modal-overlay" id="modal-overlay" onclick="toggleModal(false)"></div>
         <div class="modal-content" id="modal-content">
             <div id="mobile-fav-list"></div>
@@ -1631,8 +1643,10 @@
         }
         function toggleModal(show) {
             const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
             if (show) {
                 overlay.classList.add('active');
+                if (content) content.scrollTop = 0; // 開啟時自動回到頂部看到設定
             } else {
                 overlay.classList.remove('active');
             }
