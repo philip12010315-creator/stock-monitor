@@ -996,12 +996,8 @@
                 if (docSnap.exists) {
                     const userData = docSnap.data();
                     if (userData.status === 'approved' || userData.status === undefined) {
-                        const cloudFavs = userData.favorites || [];
-                        const combined = [...cloudFavs];
-                        favorites.forEach(lf => {
-                            if (!combined.some(cf => cf.code === lf.code)) combined.push(lf);
-                        });
-                        favorites = combined;
+                        // 帳號已核准：直接採用雲端清單，不與本地舊資料合併
+                        favorites = userData.favorites || [];
                         localStorage.setItem('stock_favorites', JSON.stringify(favorites));
                         syncId = input;
                         localStorage.setItem('stock_sync_id', syncId);
@@ -1149,6 +1145,7 @@
         function logout() {
             if (!confirm('確定要登出並切換帳號嗎？')) return;
             localStorage.removeItem('stock_sync_id');
+            localStorage.removeItem('stock_favorites'); // 登出時清空本地收藏，防止殘留給下一個使用者
             location.reload(); // 重新整理頁面回到登入牆
         }
 
