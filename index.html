@@ -976,6 +976,54 @@
         let searchQuery = '';
         let favorites = JSON.parse(localStorage.getItem('stock_favorites') || '[]');
 
+        // 頁面載入與初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            const wall = document.getElementById('login-wall');
+            if (syncId) {
+                // 1. 基本權限檢查
+                if (syncId === ADMIN_ID) {
+                    isAdmin = true;
+                    document.body.classList.add('is-admin');
+                    document.getElementById('admin-tag').style.display = 'inline-block';
+                    refreshAdminList();
+                }
+
+                // 2. 無論是管理員還是一般使用者，都去雲端抓取收藏清單
+                try {
+                    const docSnap = await db.collection('users').doc(syncId).get();
+                    if (docSnap.exists) {
+                        const userData = docSnap.data();
+                        // 檢查是否被核准 (管理員不需核准)
+                        if (syncId === ADMIN_ID || userData.status === 'approved' || userData.status === undefined) {
+                            wall.classList.add('hidden');
+                            document.body.classList.add('logged-in');
+                            favorites = userData.favorites || [];
+                            localStorage.setItem('stock_favorites', JSON.stringify(favorites));
+                        } else {
+                            // 雖有紀錄但被封鎖
+                            localStorage.removeItem('stock_sync_id');
+                            location.reload();
+                        }
+                    } else if (syncId === ADMIN_ID) {
+                        // 管理員若雲端沒資料，至少要能進去
+                        wall.classList.add('hidden');
+                        document.body.classList.add('logged-in');
+                    } else {
+                        localStorage.removeItem('stock_sync_id');
+                        location.reload();
+                    }
+                } catch(e) {
+                    console.warn('同步失敗，使用本地資料');
+                    wall.classList.add('hidden');
+                    document.body.classList.add('logged-in');
+                }
+            } else {
+                wall.classList.remove('hidden');
+                document.body.classList.remove('logged-in');
+            }
+            render();
+        });
+
         // 雲端同步邏輯
         async function connectCloud(input, password = '') {
             const msg = document.getElementById('login-msg');
