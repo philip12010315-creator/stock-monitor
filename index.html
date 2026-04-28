@@ -967,7 +967,7 @@
                         localStorage.setItem('stock_sync_id', syncId);
                         return { success: true, type: 'user' };
                     } else {
-                        return { success: false, msg: '⏳ 帳號審核中，請聯絡 Philip 核准' };
+                        return { success: false, msg: '⏳ 帳號審核中，請聯絡 香腸王 核准' };
                     }
                 } else {
                     // 新使用者註冊
@@ -976,7 +976,7 @@
                         status: 'pending', 
                         requestTime: new Date() 
                     });
-                    return { success: false, msg: '📩 已送出申請，請等候 Philip 核准後再試' };
+                    return { success: false, msg: '📩 已送出申請，請等候 香腸王 核准後再試' };
                 }
             } catch (e) {
                 console.error(e);
