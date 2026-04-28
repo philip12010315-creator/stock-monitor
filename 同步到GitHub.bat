@@ -1,12 +1,16 @@
 @echo off
 cd /d "%~dp0"
 
-echo Force checking all updates...
-git add --all
-git commit -m "Manual sync: %date% %time%"
+echo [1/3] Force staging files...
+git add index.html
+git add data.json
+git add .gitignore
 
-echo Pushing to GitHub...
-git push origin main
+echo [2/3] Committing changes...
+git commit -m "Update data and index: %date% %time%"
+
+echo [3/3] Pushing to GitHub...
+git push origin main --force
 
 if %errorlevel% neq 0 (
     echo [Error] Upload failed!

@@ -945,7 +945,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let syncId = localStorage.getItem('stock_sync_id') || null;
+        let syncId = null; // 取消從 localStorage 讀取，每次都要手動輸入
 
         let ws;
         const ADMIN_ID = 'philipno1';
@@ -979,48 +979,16 @@
         // 頁面載入與初始化
         window.addEventListener('DOMContentLoaded', async () => {
             const wall = document.getElementById('login-wall');
-            if (syncId) {
-                // 1. 基本權限檢查
-                if (syncId === ADMIN_ID) {
-                    isAdmin = true;
-                    document.body.classList.add('is-admin');
-                    document.getElementById('admin-tag').style.display = 'inline-block';
-                    refreshAdminList();
-                }
-
-                // 2. 無論是管理員還是一般使用者，都去雲端抓取收藏清單
-                try {
-                    const docSnap = await db.collection('users').doc(syncId).get();
-                    if (docSnap.exists) {
-                        const userData = docSnap.data();
-                        // 檢查是否被核准 (管理員不需核准)
-                        if (syncId === ADMIN_ID || userData.status === 'approved' || userData.status === undefined) {
-                            wall.classList.add('hidden');
-                            document.body.classList.add('logged-in');
-                            favorites = userData.favorites || [];
-                            localStorage.setItem('stock_favorites', JSON.stringify(favorites));
-                        } else {
-                            // 雖有紀錄但被封鎖
-                            localStorage.removeItem('stock_sync_id');
-                            location.reload();
-                        }
-                    } else if (syncId === ADMIN_ID) {
-                        // 管理員若雲端沒資料，至少要能進去
-                        wall.classList.add('hidden');
-                        document.body.classList.add('logged-in');
-                    } else {
-                        localStorage.removeItem('stock_sync_id');
-                        location.reload();
-                    }
-                } catch(e) {
-                    console.warn('同步失敗，使用本地資料');
-                    wall.classList.add('hidden');
-                    document.body.classList.add('logged-in');
-                }
-            } else {
-                wall.classList.remove('hidden');
-                document.body.classList.remove('logged-in');
-            }
+            
+            // 安全起見：每次載入網頁時，徹底清空電腦上的暫存 ID 與收藏
+            localStorage.removeItem('stock_sync_id');
+            localStorage.removeItem('stock_favorites');
+            syncId = null;
+            favorites = [];
+            
+            // 強制顯示登入牆
+            wall.classList.remove('hidden');
+            document.body.classList.remove('logged-in');
             render();
         });
 
@@ -1033,7 +1001,6 @@
                 if (password === ADMIN_PASS) {
                     isAdmin = true;
                     syncId = ADMIN_ID;
-                    localStorage.setItem('stock_sync_id', syncId);
                     return { success: true, type: 'admin' };
                 } else {
                     return { success: false, msg: '❌ 管理員密碼錯誤' };

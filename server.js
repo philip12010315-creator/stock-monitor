@@ -11,8 +11,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// 設定監控的路徑
-const WATCH_PATH = 'C:/Users/USER/Desktop/發動結果';
+// 設定監控的路徑 (使用相對於本目錄的上一層，精確對應到你的 OneDrive 桌面)
+const WATCH_PATH = path.join(__dirname, '..', '發動結果');
 
 // 確保路徑存在
 if (!fs.existsSync(WATCH_PATH)) {
@@ -29,6 +29,14 @@ function parseXQCSV(filePath) {
     const fileContent = iconv.decode(buffer, 'big5');
     
     const lines = fileContent.split('\n');
+    
+    // 從第二行解析資料日期 (例如: 資料日期: 2024年 4月 27日)
+    let fileDate = '';
+    if (lines[1]) {
+        const dateMatch = lines[1].match(/(\d{4}年\s*\d{1,2}月\s*\d{1,2}日)/);
+        if (dateMatch) fileDate = dateMatch[0].replace(/\s+/g, ''); // 去除多餘空格
+    }
+
     // 跳過前三行描述，從第 4 行開始 (index 3)
     const csvContent = lines.slice(3).join('\n');
 
@@ -41,7 +49,7 @@ function parseXQCSV(filePath) {
             .pipe(csv())
             .on('data', (data) => results.push(data))
             .on('end', () => {
-                resolve(results);
+                resolve({ results, fileDate });
             });
     });
 }
@@ -60,12 +68,19 @@ async function broadcastUpdate() {
     console.log(`讀取最新檔案: ${latestFile}`);
 
     try {
-        const data = await parseXQCSV(filePath);
+        const { results, fileDate } = await parseXQCSV(filePath);
         
         // 儲存為靜態檔案（供 GitHub Pages 使用）
-        fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(data, null, 2));
+        // 為了相容性，我們存入一個包含日期與數據的物件
+        const output = { date: fileDate, stocks: results };
+        fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(output, null, 2));
         
-        const payload = JSON.stringify({ type: 'UPDATE', data, filename: latestFile });
+        const payload = JSON.stringify({ 
+            type: 'UPDATE', 
+            data: results, 
+            filename: latestFile, 
+            fileDate: fileDate 
+        });
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(payload);
