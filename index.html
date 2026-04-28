@@ -570,6 +570,16 @@
             .status-marquee-content.running {
                 animation-duration: 12s !important;
             }
+
+            /* 登入牆手機版寬度優化 */
+            .login-card {
+                width: 95% !important;
+                padding: 30px 20px !important;
+                border-radius: 20px !important;
+            }
+            #login-msg {
+                line-height: 1.5 !important;
+            }
         }
 
         /* 手機版懸浮按鈕 */
@@ -1123,12 +1133,12 @@
                 // 自動登入時，隱藏多餘的輸入框，讓畫面更乾淨並明確提示
                 document.querySelectorAll('.sync-input-group, .sync-btn-primary, .sync-desc, .login-card p').forEach(el => el.style.display = 'none');
                 msg.style.fontSize = '1.1rem';
-                msg.innerText = `✨ 歡迎回來！\n正在自動登入 [ ${input} ]...`;
+                msg.innerHTML = `✨ 歡迎回來！<br>正在自動登入 <b style="color: var(--gold);">[ ${input} ]</b>...`;
                 
                 // 刻意延長等待時間，讓使用者能清楚看到歡迎畫面
                 await new Promise(r => setTimeout(r, 1200));
             } else {
-                msg.innerText = '⏳ 處理中...';
+                msg.innerHTML = '⏳ 處理中...';
             }
             msg.style.color = 'var(--accent)';
             
@@ -1138,7 +1148,7 @@
                 localStorage.setItem('stock_login_id', input);
                 localStorage.setItem('stock_login_pass', password);
 
-                msg.innerText = `✅ 登入成功！\n歡迎，${input}`;
+                msg.innerHTML = `✅ 登入成功！<br>歡迎，<b style="color: var(--gold);">${input}</b>`;
                 msg.style.color = 'var(--success)';
                 
                 // 延長登入成功畫面的停留時間
