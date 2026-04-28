@@ -996,15 +996,9 @@
         async function connectCloud(input, password = '') {
             const msg = document.getElementById('login-msg');
             
-            // 1. 管理員登入檢查
-            if (input === ADMIN_ID) {
-                if (password === ADMIN_PASS) {
-                    isAdmin = true;
-                    syncId = ADMIN_ID;
-                    return { success: true, type: 'admin' };
-                } else {
-                    return { success: false, msg: '❌ 管理員密碼錯誤' };
-                }
+            // 1. 管理員密碼檢查
+            if (input === ADMIN_ID && password !== ADMIN_PASS) {
+                return { success: false, msg: '❌ 管理員密碼錯誤' };
             }
 
             try {
@@ -1013,17 +1007,32 @@
                 
                 if (docSnap.exists) {
                     const userData = docSnap.data();
-                    if (userData.status === 'approved' || userData.status === undefined) {
-                        // 帳號已核准：直接採用雲端清單，不與本地舊資料合併
+                    
+                    // 檢查權限 (管理員或是已核准的使用者)
+                    const isApproved = (input === ADMIN_ID) || userData.status === 'approved' || userData.status === undefined;
+                    
+                    if (isApproved) {
+                        // 登入成功：採用雲端清單
                         favorites = userData.favorites || [];
                         localStorage.setItem('stock_favorites', JSON.stringify(favorites));
                         syncId = input;
                         localStorage.setItem('stock_sync_id', syncId);
-                        return { success: true, type: 'user' };
+                        
+                        if (input === ADMIN_ID) isAdmin = true;
+                        
+                        return { success: true, type: input === ADMIN_ID ? 'admin' : 'user' };
                     } else {
                         return { success: false, msg: '⏳ 帳號審核中，請聯絡 香腸王 核准' };
                     }
                 } else {
+                    // 如果是管理員但文件不存在 (首次登入)，幫他建立
+                    if (input === ADMIN_ID) {
+                        await docRef.set({ favorites: [], status: 'approved', role: 'admin' });
+                        syncId = input;
+                        isAdmin = true;
+                        return { success: true, type: 'admin' };
+                    }
+                    
                     // 新使用者註冊
                     await docRef.set({ 
                         favorites: favorites, 
