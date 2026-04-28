@@ -1124,6 +1124,9 @@
                 document.querySelectorAll('.sync-input-group, .sync-btn-primary, .sync-desc, .login-card p').forEach(el => el.style.display = 'none');
                 msg.style.fontSize = '1.1rem';
                 msg.innerText = `✨ 歡迎回來！\n正在自動登入 [ ${input} ]...`;
+                
+                // 刻意延長等待時間，讓使用者能清楚看到歡迎畫面
+                await new Promise(r => setTimeout(r, 1200));
             } else {
                 msg.innerText = '⏳ 處理中...';
             }
@@ -1137,6 +1140,8 @@
 
                 msg.innerText = `✅ 登入成功！\n歡迎，${input}`;
                 msg.style.color = 'var(--success)';
+                
+                // 延長登入成功畫面的停留時間
                 setTimeout(() => {
                     document.getElementById('login-wall').classList.add('hidden');
                     document.body.classList.add('logged-in');
@@ -1146,7 +1151,7 @@
                         refreshAdminList();
                     }
                     render();
-                }, 800);
+                }, 1200);
             } else {
                 if (isAutoLogin) {
                     // 自動登入失敗 (密碼被改或被封鎖)，清除本地記錄並恢復 UI
