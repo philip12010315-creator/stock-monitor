@@ -1,1 +1,7 @@
-{}
+{
+    "editor.semanticTokenColorCustomizations": {
+        "rules": {
+            "variable.readonly:python": "#4EC9B0"
+        }
+    }
+}
