@@ -880,12 +880,11 @@
             
             <div class="sync-input-group" style="text-align: left;">
                 <label>ID</label>
-                <input type="text" id="login-id-input" placeholder="例如: abcd1234" style="width: 100%;" oninput="checkAdminId()">
+                <input type="text" id="login-id-input" placeholder="例如: abcd1234" style="width: 100%;">
             </div>
 
-            <!-- 管理員密碼框 (預設隱藏) -->
-            <div id="admin-pass-group" class="sync-input-group" style="text-align: left; display: none;">
-                <label>管理員密碼 (Admin Password)</label>
+            <div id="admin-pass-group" class="sync-input-group" style="text-align: left;">
+                <label>密碼 (新註冊請自行設定)</label>
                 <input type="password" id="login-pass-input" placeholder="請輸入密碼" style="width: 100%;">
             </div>
             
@@ -1016,22 +1015,36 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const wall = document.getElementById('login-wall');
             
-            // 安全起見：每次載入網頁時，徹底清空電腦上的暫存 ID 與收藏
-            localStorage.removeItem('stock_sync_id');
-            localStorage.removeItem('stock_favorites');
-            syncId = null;
-            favorites = [];
-            
-            // 強制顯示登入牆
-            wall.classList.remove('hidden');
-            document.body.classList.remove('logged-in');
-            render();
+            const savedId = localStorage.getItem('stock_login_id');
+            const savedPass = localStorage.getItem('stock_login_pass');
+
+            if (savedId && savedPass) {
+                // 自動登入
+                document.getElementById('login-id-input').value = savedId;
+                document.getElementById('login-pass-input').value = savedPass;
+                handleLogin();
+            } else {
+                // 安全起見：如果沒紀錄密碼，徹底清空電腦上的暫存 ID 與收藏
+                localStorage.removeItem('stock_sync_id');
+                localStorage.removeItem('stock_favorites');
+                syncId = null;
+                favorites = [];
+                
+                // 強制顯示登入牆
+                wall.classList.remove('hidden');
+                document.body.classList.remove('logged-in');
+                render();
+            }
         });
 
         // 雲端同步邏輯
         async function connectCloud(input, password = '') {
             const msg = document.getElementById('login-msg');
             
+            if (!password) {
+                return { success: false, msg: '❌ 請輸入密碼' };
+            }
+
             // 1. 管理員密碼檢查
             if (input === ADMIN_ID && password !== ADMIN_PASS) {
                 return { success: false, msg: '❌ 管理員密碼錯誤' };
@@ -1044,6 +1057,15 @@
                 if (docSnap.exists) {
                     const userData = docSnap.data();
                     
+                    // 密碼檢查機制
+                    if (userData.password && userData.password !== password) {
+                        return { success: false, msg: '❌ 此 ID 已被註冊，或密碼錯誤' };
+                    }
+                    if (!userData.password && input !== ADMIN_ID) {
+                        // 舊帳號向後相容：第一次登入自動綁定密碼
+                        await docRef.update({ password: password });
+                    }
+
                     // 檢查權限 (管理員或是已核准的使用者)
                     const isApproved = (input === ADMIN_ID) || userData.status === 'approved' || userData.status === undefined;
                     
@@ -1063,7 +1085,7 @@
                 } else {
                     // 如果是管理員但文件不存在 (首次登入)，幫他建立
                     if (input === ADMIN_ID) {
-                        await docRef.set({ favorites: [], status: 'approved', role: 'admin' });
+                        await docRef.set({ password: password, favorites: [], status: 'approved', role: 'admin' });
                         syncId = input;
                         isAdmin = true;
                         return { success: true, type: 'admin' };
@@ -1071,6 +1093,7 @@
                     
                     // 新使用者註冊
                     await docRef.set({ 
+                        password: password,
                         favorites: favorites, 
                         status: 'pending', 
                         requestTime: new Date() 
@@ -1083,15 +1106,7 @@
             }
         }
 
-        function checkAdminId() {
-            const input = document.getElementById('login-id-input').value.trim().toLowerCase();
-            const passGroup = document.getElementById('admin-pass-group');
-            if (input === ADMIN_ID) {
-                passGroup.style.display = 'block';
-            } else {
-                passGroup.style.display = 'none';
-            }
-        }
+        // checkAdminId 已移除，因為現在所有人都需要密碼
 
         async function handleLogin() {
             const input = document.getElementById('login-id-input').value.trim().toLowerCase();
@@ -1109,6 +1124,10 @@
             
             const result = await connectCloud(input, password);
             if (result.success) {
+                // 登入成功，儲存帳密供下次自動登入
+                localStorage.setItem('stock_login_id', input);
+                localStorage.setItem('stock_login_pass', password);
+
                 msg.innerText = '✅ 登入成功！';
                 msg.style.color = 'var(--success)';
                 setTimeout(() => {
@@ -1209,6 +1228,8 @@
             if (!confirm('確定要登出並切換帳號嗎？')) return;
             localStorage.removeItem('stock_sync_id');
             localStorage.removeItem('stock_favorites'); // 登出時清空本地收藏，防止殘留給下一個使用者
+            localStorage.removeItem('stock_login_id'); // 清除自動登入
+            localStorage.removeItem('stock_login_pass');
             location.reload(); // 重新整理頁面回到登入牆
         }
 
