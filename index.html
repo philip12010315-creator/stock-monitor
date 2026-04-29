@@ -1018,8 +1018,8 @@
                     }
                 };
             } else {
-                // 雲端環境 (https)，改用靜態資料模式讀取 data.json
-                fetch('data.json')
+                // 雲端環境 (https)，改用靜態資料模式讀取 data.json (加上時間戳記防止快取)
+                fetch(`data.json?t=${Date.now()}`)
                     .then(res => res.json())
                     .then(data => {
                         allData = data.stocks || [];
@@ -1554,8 +1554,8 @@
                 const ratio = price / cost;
                 
                 const nodes = [
-                    { label: '發動區', mul: 1.00, zone: 'build',   zoneName: '建倉區', icon: '↗' },
-                    { label: '成本',   mul: 1.04, zone: 'safe',    zoneName: '安全區', icon: '◇' },
+                    { label: '成本',   mul: 1.00, zone: 'safe',    zoneName: '成本區', icon: '◇' },
+                    { label: '發動區', mul: 1.04, zone: 'build',   zoneName: '建倉區', icon: '↗' },
                     { label: '第一關', mul: 1.20, zone: 'warn',    zoneName: '警戒區', icon: '⚠' },
                     { label: '第二關', mul: 1.40, zone: 'danger',  zoneName: '高危區', icon: '🔥' },
                     { label: '最後目標', mul: 1.70, zone: 'extreme', zoneName: '極限區', icon: '🎯' }

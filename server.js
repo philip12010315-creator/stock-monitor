@@ -89,6 +89,19 @@ async function broadcastUpdate() {
     } catch (err) {
         console.error('解析失敗:', err);
     }
+
+    // 自動同步到 GitHub (針對 GitHub Pages 環境)
+    const { exec } = require('child_process');
+    const syncScript = path.join(__dirname, '同步到GitHub.bat');
+    
+    console.log('正在自動同步到 GitHub...');
+    exec(`"${syncScript}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`同步失敗: ${error.message}`);
+            return;
+        }
+        console.log('同步成功！網站已更新。');
+    });
 }
 
 // 監控資料夾變動
